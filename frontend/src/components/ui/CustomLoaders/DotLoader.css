@@ -1,0 +1,58 @@
+.dl-loader {
+    display: flex;
+    /* justify-content: center;
+    align-items: center; */
+}
+
+.dl-dot {
+    width: 8px;
+    height: 8px;
+    margin: 0 4px;
+    border-radius: 50%;
+    animation: dl-loader-animation 1.2s infinite ease-in-out;
+    animation-fill-mode: both;
+}
+
+.dl-dot:nth-child(1) {
+    background-color: #64748b;
+    animation-delay: 0s;
+}
+
+.dl-dot:nth-child(2) {
+    background-color: #6b7280;
+    animation-delay: 0.2s;
+}
+
+.dl-dot:nth-child(3) {
+    background-color: #71717a;
+    animation-delay: 0.4s;
+}
+
+@keyframes dl-loader-animation {
+
+    0%,
+    80%,
+    100% {
+        transform: scale(0.2);
+    }
+
+    40% {
+        transform: scale(1);
+    }
+}
+
+.svg-dot-loader {
+    height: 100%;
+    width: 20%;
+    text-align: center;
+    display: inline-block;
+    vertical-align: top;
+}
+
+/*
+    Set the color of the icon
+  */
+.svg-dot-loader svg path,
+.svg-dot-loader svg rect {
+    fill: #6366f1;
+}
