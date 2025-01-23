@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { rateLimit } from 'express-rate-limit'
 
 import userRoutes from './routes/user.routes.js'
+import authRoutes from './routes/auth.routes.js'
 
 const limiter = rateLimit({
     windowMs: 5 * 60 * 1000, // 5 minutes
@@ -36,6 +37,9 @@ app.use((req, res, next) => {
 
 //login api
 app.use('/v1/user', userRoutes);
+
+// auth api
+app.use('/v1/auth', authRoutes);
 
 const PORT = process.env.PORT || 3002;
 

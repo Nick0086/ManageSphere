@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 import EnhancedAttachmentInput from '@/components/ui/EnhancedAttachmentInput';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 
 
 const ReusableFormField = ({
@@ -39,7 +40,8 @@ const ReusableFormField = ({
     isencryptAES = false,
     decryptAESFunction = {},
     radioLabelClassName,
-    radioGroupBodyClassName
+    radioGroupBodyClassName,
+    coustomValue
 }) => {
 
     const [showPassword, setShowPassword] = useState(false);
@@ -63,6 +65,7 @@ const ReusableFormField = ({
         if (type === 'PhoneInput') {
             commonProps.onChange = (value) => {
                 field.onChange(value);
+                onValueChange?.(value);
             }
         }
         if (type === 'password') {
@@ -86,7 +89,10 @@ const ReusableFormField = ({
                     >
                         <FormControl className={cn("", inputClassName)}>
                             <SelectTrigger isLoading={isLoading}>
-                                <SelectValue placeholder={placeholder} />
+                                {
+                                    coustomValue ?? <SelectValue placeholder={placeholder} />
+                                }
+
                             </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -188,6 +194,29 @@ const ReusableFormField = ({
                         </button>
                     </div>
                 );
+            case 'OTP':
+                return (
+                    <InputOTP
+                    className='w-full'
+                        value={field.value}
+                        disabled={disabled || isLoading || readonly}
+                        maxLength={6}
+                        {...inputProps}
+                        onChange={(value) => {
+                            field.onChange(value);
+                            onValueChange?.(value);
+                        }}
+                    >
+                        <InputOTPGroup className='border border-input rounded px-0.5 w-full'>
+                            <InputOTPSlot placeholder='●' className='border-none first:rounded-l-none last:rounded-none' index={0} />
+                            <InputOTPSlot placeholder='●' className='border-none first:rounded-l-none last:rounded-none' index={1} />
+                            <InputOTPSlot placeholder='●' className='border-none first:rounded-l-none last:rounded-none' index={2} />
+                            <InputOTPSlot placeholder='●' className='border-none first:rounded-l-none last:rounded-none' index={3} />
+                            <InputOTPSlot placeholder='●' className='border-none first:rounded-l-none last:rounded-none' index={4} />
+                            <InputOTPSlot placeholder='●' className='border-none first:rounded-l-none last:rounded-none' index={5} />
+                        </InputOTPGroup>
+                    </InputOTP>
+                )
             case 'radio':
                 return (
                     <RadioGroup
@@ -200,13 +229,13 @@ const ReusableFormField = ({
                         className="space-y-1"
                         {...inputProps}
                     >
-                        <div className={cn(`flex items-center gap-2`,radioGroupBodyClassName)} >
+                        <div className={cn(`flex items-center gap-2`, radioGroupBodyClassName)} >
                             {options.map((option) => (
                                 <div key={option.value} className="flex items-center space-x-2">
                                     <RadioGroupItem value={option.value} id={`${name}-${option.value}`} />
                                     <label
                                         htmlFor={`${name}-${option.value}`}
-                                        className={cn(`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70`,radioLabelClassName)}
+                                        className={cn(`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70`, radioLabelClassName)}
                                     >
                                         {option.label}
                                     </label>
