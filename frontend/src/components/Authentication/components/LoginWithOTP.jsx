@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import ReusableFormField from '@/common/Form/ReusableFormField';
+import { useInterval } from 'usehooks-ts';
 
 // Constants
 const INITIAL_ERROR_STATE = {
@@ -18,15 +19,26 @@ export default function LoginWithOTP({
     loginType,
 }) {
     const [errors, setErrors] = useState(INITIAL_ERROR_STATE);
+    const [resendTimer, setresendTimer] = useState(60);
 
     const onSubmitForm = (data) => {
         console.log("LoginWithOTP --> onSubmitForm", data);
         // Add OTP verification logic here
     };
 
+    const onResendOTPhandler = () => {
+        setresendTimer(60)
+    }
+
     const resetError = () => {
         setErrors(INITIAL_ERROR_STATE);
     };
+
+    useInterval(() => {
+        if (resendTimer > 0) {
+            setresendTimer(prev => prev - 1);
+        }
+    }, (resendTimer > 0) ? 1000 : null);
 
     return (
         <Form {...form}>
@@ -69,14 +81,25 @@ export default function LoginWithOTP({
                         Sign in using password
                     </Button>
 
-                    <Button
-                        type='button'
-                        variant="none"
-                        size="sm"
-                        className="text-blue-600 font-semibold p-0"
-                    >
-                        Resend OTP?
-                    </Button>
+                    {
+                        resendTimer > 0 ? (
+                            <span className='text-gray-600 text-sm font-semibold'>
+                                Resend in {resendTimer}s
+                            </span>
+                        ) : (
+                            <Button
+                                type='button'
+                                variant="none"
+                                size="sm"
+                                className="text-blue-600 font-semibold p-0"
+                                onClick={onResendOTPhandler}
+                            >
+                                Resend OTP
+                            </Button>
+                        )
+                    }
+
+
                 </div>
             </form>
         </Form>

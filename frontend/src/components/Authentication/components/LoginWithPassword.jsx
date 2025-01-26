@@ -107,7 +107,7 @@ export default function LoginWithPassword({
                         size="sm"
                         className="text-blue-600 font-semibold p-0"
                     >
-                        Resend
+                        Forgot Password?
                     </Button>
                 </div>
             </form>
