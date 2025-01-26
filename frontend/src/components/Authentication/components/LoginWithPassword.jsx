@@ -8,7 +8,8 @@ import ReusableFormField from '@/common/Form/ReusableFormField';
 
 // Services and Utilities
 import { verifyPassword } from '@/service/auth.service';
-import { toastError } from '@/utils/toast-utils';
+import { toastError, toastSuccess } from '@/utils/toast-utils';
+import { useNavigate } from 'react-router';
 
 // Constants
 const INITIAL_ERROR_STATE = {
@@ -28,11 +29,13 @@ export default function LoginWithPassword({
     loginType,
 }) {
     const [errors, setErrors] = useState(INITIAL_ERROR_STATE);
+    const navigate = useNavigate();
 
     const loginWithPasswordMutation = useMutation({
         mutationFn: verifyPassword,
         onSuccess: () => {
-            // Handle successful login
+            toastSuccess('Login Successful');
+            navigate(`/`);
         },
         onError: (error) => {
             console.error("Error in verifying login id:", error);

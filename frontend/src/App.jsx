@@ -1,52 +1,61 @@
 import { ToastContainer } from 'react-toastify';
-import { Navigate, Route, Routes } from 'react-router';
+import { Navigate, Route, Routes, useLocation } from 'react-router';
 import { Toaster } from './components/ui/toaster';
-import Dashboard from './components/Dashboard/Dashboard';
 import PrivateRoutes from './common/PrivateRoutes';
 
 import SignIn from './components/Authentication/SignIn';
 import Login from './components/Authentication/Login';
+import Sidebar from './components/Sidebar/Sidebar';
+import Dashboard from './components/Dashboard/Dashboard';
 
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
-
+import TaskManagerIndex from './components/TaskManager/TaskManagerIndex';
 
 function App() {
+
+  const location = useLocation();
+  const isLoginRoute = location.pathname === "/login" || location.pathname === "/register-user";
+  console.log({ isLoginRoute }, location.pathname)
+
   return (
     <>
-      <Routes>
-        {/* Public/Auth Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register-user" element={<SignIn />} />
 
-        {/* Protected Routes */}
-        <Route element={<PrivateRoutes />}>
-          <Route path="/" element={<Dashboard />} />
-        </Route>
+      {
+        !isLoginRoute && (
+          <Sidebar>
+            <Routes>
+              <Route exact element={<PrivateRoutes />}>
+                <Route path="/" element={<div>👋 Hyy</div>} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/todos" element={<TaskManagerIndex />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Route>
+            </Routes>
+          </Sidebar>
+        )
+      }
 
-        {/* Fallback Routes */}
-        <Route 
-          path="/register-user/*" 
-          element={<Navigate to="/register-user" replace />} 
-        />
-        <Route 
-          path="/login/*" 
-          element={<Navigate to="/login" replace />} 
-        />
-        <Route 
-          path="*" 
-          element={<Navigate to="/" replace />} 
-        />
-      </Routes>
+      {
+        isLoginRoute && (
+          <Routes>
+            <Route exact path="/login" element={<Login />} />
+            <Route exact path="/register-user" element={<SignIn />} />
+            <Route path="*" element={<Navigate to="/login" />} />
+          </Routes>
+        )
+      }
+
+
 
       {/* Notifications */}
       <ToastContainer limit={3} />
-      <Toaster 
+      <Toaster
         position="top-center"
         expand={true}
-        toastOptions={{ 
+        toastOptions={{
           className: 'list-none'
-        }} 
+        }}
       />
     </>
   );

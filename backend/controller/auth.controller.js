@@ -26,15 +26,14 @@ import { sendOtpEmail } from "../services/nodemailer/nodemailer.service.js";
     id INT AUTO_INCREMENT PRIMARY KEY,
     session_id CHAR(36) NOT NULL UNIQUE,  -- UUID as a unique identifier
     user_id CHAR(36) NOT NULL,  -- Reference to users.unique_id
-    user_agent VARCHAR(255) NOT NULL,
+    user_agent TEXT NOT NULL,
     ip_address VARCHAR(45) NOT NULL,
     login_type VARCHAR(45) NOT NULL,
     login_id VARCHAR(45) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     expires_at TIMESTAMP NOT NULL,
-    refresh_token VARCHAR(255) NOT NULL,
-    refresh_token VARCHAR(255) NOT NULL,
-    revoke INT DEFAULT 0,
+    refresh_token TEXT NOT NULL,
+    is_revoke INT DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users(unique_id)
 );*/
 
@@ -55,7 +54,6 @@ const COOKIE_OPTIONS = {
     sameSite: 'strict',
     path: '/'
 };
-
 
 export const checkUserEmailOrNumber = async (req, res) => {
     try {
@@ -231,9 +229,10 @@ const userSessionsManager = async (req, res, userData) => {
             { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
         );
 
+
         // Revoke all old sessions for the same user and user-agent
-        const revokeSql = `UPDATE user_sessions SET revoke = 1 WHERE user_id = ? AND user_agent = ?`;
-        const revokeParams = [unique_id, userAgent];
+        const revokeSql = `UPDATE user_sessions SET  is_revoke = ? WHERE  user_id = ? AND user_agent = ?`;
+        const revokeParams = [1, unique_id, userAgent];
         await query(revokeSql, revokeParams);
 
         const sessionSql = `INSERT INTO user_sessions (session_id, user_id, user_agent, login_id, login_type, ip_address, expires_at, refresh_token) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -260,3 +259,26 @@ const userSessionsManager = async (req, res, userData) => {
         return null;
     }
 };
+
+
+export const userActiveSessionCheck = async (req, res) => {
+    try {
+        const { unique_id } = req.user;
+        const userAgent = req.headers['user-agent'] || 'Unknown';
+        const refreshToken = req.cookies?.refreshToken;
+
+        const revokeSql = `SELECT * FROM user_sessions WHERE is_revoke = 0 AND user_id = ? AND user_agent = ? AND refresh_token = ?`;
+        const revokeParams = [unique_id, userAgent, refreshToken];
+        const response = await query(revokeSql, revokeParams);
+
+        if (response?.length) {
+            return res.status(200).json({ code: 'AUTHORIZED' })
+        } else {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+    } catch (error) {
+        handleError("auth.controller.js", 'userActiveSessionCheck', res, error, 'Error in userActiveSessionCheck');
+    }
+
+}

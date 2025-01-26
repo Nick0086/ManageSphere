@@ -20,14 +20,14 @@ CREATE TABLE user_sessions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     session_id CHAR(36) NOT NULL UNIQUE,  -- UUID as a unique identifier
     user_id CHAR(36) NOT NULL,  -- Reference to users.unique_id
-    user_agent VARCHAR(255) NOT NULL,
+    user_agent TEXT NOT NULL,
     ip_address VARCHAR(45) NOT NULL,
     login_type VARCHAR(45) NOT NULL,
     login_id VARCHAR(45) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     expires_at TIMESTAMP NOT NULL,
-    refresh_token VARCHAR(255) NOT NULL,
-    revoke INT DEFAULT 0,
+    refresh_token TEXT NOT NULL,
+    is_revoke INT DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users(unique_id)
 );
 

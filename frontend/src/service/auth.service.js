@@ -1,4 +1,4 @@
-import { authApi, handleApiError } from "@/utils/api";
+import { api, authApi, handleApiError } from "@/utils/api";
 
 export const userVerified = async (userData) => {
     try {
@@ -12,6 +12,33 @@ export const userVerified = async (userData) => {
 export const verifyPassword = async (userData) => {
     try {
         const response = await authApi.post('/auth/verify-password',userData);
+        return { success: true, data: response.data };
+    } catch (error) {
+        throw handleApiError(error)
+    }
+}
+
+export const verifyOPT = async (userData) => {
+    try {
+        const response = await authApi.post('/auth/verify-otp',userData);
+        return { success: true, data: response.data };
+    } catch (error) {
+        throw handleApiError(error)
+    }
+}
+
+export const sendOTP = async (userData) => {
+    try {
+        const response = await authApi.post('/auth/send-otp',userData);
+        return { success: true, data: response.data };
+    } catch (error) {
+        throw handleApiError(error)
+    }
+}
+
+export const checkUserToken = async () => {
+    try {
+        const response = await api.get(`/auth/check-user-session`);
         return { success: true, data: response.data };
     } catch (error) {
         throw handleApiError(error)

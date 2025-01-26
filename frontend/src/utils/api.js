@@ -29,12 +29,12 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use(async config => {
-    const token = await waitForToken();
-    const userData = window.localStorage.getItem("userData");
-    if (token) {
-        config.headers.Authorization = token;
-        config.headers["user-data"] = userData;
-    }
+    // const token = await waitForToken();
+    // const userData = window.localStorage.getItem("userData");
+    // if (token) {
+    //     config.headers.Authorization = token;
+    //     config.headers["user-data"] = userData;
+    // }
     return config;
 }, error => Promise.reject(error));
 

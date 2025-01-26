@@ -33,7 +33,7 @@ export const authMiddleware = async (req, res, next) => {
 
                     try {
                         const decodedRefresh = jwt.verify(refreshToken, process.env.JWT_SECRET);
-                        const sessionSql = `SELECT * FROM user_sessions WHERE refresh_token = ? AND revoke = 0 AND expires_at > NOW()`;
+                        const sessionSql = `SELECT * FROM user_sessions WHERE refresh_token = ? AND is_revoke = 0 AND expires_at > NOW()`;
                         const sessionParams = [refreshToken];
                         const sessionResult = await query(sessionSql, sessionParams);
 

@@ -1,18 +1,40 @@
+import PulsatingDots from "@/components/ui/loaders/PulsatingDots";
+import { checkUserToken } from "@/service/auth.service";
+import { useMutation } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { Navigate, Outlet, useLocation } from "react-router";
-
-
 
 export function PrivateRoutes() {
     const location = useLocation();
-    let token = window.localStorage.getItem("userData");
+    const [isLoading, setIsLoading] = useState(true);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    // console.log("Userdata = ", (token))
+    const userCheckMutation = useMutation({
+        mutationFn: checkUserToken,
+        onSuccess: () => {
+            setIsAuthenticated(true);
+            setIsLoading(false);
+        },
+        onError: (error) => {
+            console.error("Error while checking user token", error);
+            setIsAuthenticated(false);
+            setIsLoading(false);
+        },
+    });
 
-    if (token === undefined) {
-        return null; // or loading indicator/spinner/etc
+    useEffect(() => {
+        userCheckMutation.mutate();
+    }, []);
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <PulsatingDots size={5} />
+            </div>
+        );
     }
 
-    return (token !== null ? <Outlet /> : <Navigate to="/register-user" replace state={{ from: location }} />)
+    return (isAuthenticated ? <Outlet /> : <Navigate to="/login" replace state={{ from: location }} />);
 }
 
 export default PrivateRoutes;
