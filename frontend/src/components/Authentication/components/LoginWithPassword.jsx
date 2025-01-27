@@ -71,6 +71,7 @@ export default function LoginWithPassword({
                         name='password'
                         type='password'
                         label='Password'
+                        disabled={loginWithPasswordMutation?.isPending || onChangeLoginWithOption.isPending}
                         labelClassName='text-xs text-gray-600'
                         onValueChange={resetError}
                     />
@@ -85,7 +86,7 @@ export default function LoginWithPassword({
                 <Button
                     className='w-full'
                     variant="primary"
-                    disabled={loginWithPasswordMutation?.isPending}
+                    disabled={loginWithPasswordMutation?.isPending || onChangeLoginWithOption.isPending}
                     isLoading={loginWithPasswordMutation?.isPending}
                     type='submit'
                     loadingText=' '
@@ -95,10 +96,13 @@ export default function LoginWithPassword({
 
                 <div className='flex flex-row gap-2 items-center justify-between w-full'>
                     <Button
-                        onClick={() => onChangeLoginWithOption(false)}
+                        onClick={() => onChangeLoginWithOption.mutate({ loginId, loginType })}
                         type='button'
                         variant="none"
                         size="sm"
+                        isLoading={onChangeLoginWithOption.isPending}
+                        loadingText=' '
+                        disabled={onChangeLoginWithOption.isPending}
                         className="text-blue-600 font-semibold p-0"
                     >
                         Sign in using {LOGIN_ID_MAP[loginType]} OTP
@@ -108,6 +112,7 @@ export default function LoginWithPassword({
                         type='button'
                         variant="none"
                         size="sm"
+                        disabled={onChangeLoginWithOption.isPending}
                         className="text-blue-600 font-semibold p-0"
                     >
                         Forgot Password?

@@ -9,6 +9,9 @@ import { Button } from '@/components/ui/button';
 import LoginIdVerifier from './components/LoginIdVerifier';
 import LoginWithPassword from './components/LoginWithPassword';
 import LoginWithOTP from './components/LoginWithOTP';
+import { useMutation } from '@tanstack/react-query';
+import { sendOTP } from '@/service/auth.service';
+import { toastError, toastSuccess } from '@/utils/toast-utils';
 
 // Constants
 const DEFAULT_VALUES = {
@@ -64,10 +67,10 @@ export default function Login() {
   const loginId = loginIdForm.watch('loginId');
   const loginType = loginIdForm.watch('loginType');
 
-  const onChangeLoginWithOption = () => {
+  const onChangeLoginWithOption = (isTrue) => {
     loginPasswordForm.reset(DEFAULT_VALUES.password);
     loginOTPForm.reset(DEFAULT_VALUES.otp);
-    setIsLoginWithOTP(!isLoginWithOTP);
+    setIsLoginWithOTP(isTrue);
   };
 
   const resetForms = () => {
@@ -77,6 +80,17 @@ export default function Login() {
     setIsLoginIdVerified(false);
     setIsLoginWithOTP(false);
   };
+
+  const sendOTPMutation = useMutation({
+    mutationFn: sendOTP,
+    onSuccess: () => {
+      toastSuccess(`OTP sent successfully :- ${loginId}`)
+      onChangeLoginWithOption(true)
+    },
+    onError: (error) => {
+      toastError(`Error in Send OTP to ${loginId} : ${JSON.stringify(error)}`);
+    }
+  })
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F8F9FF]">
@@ -118,7 +132,7 @@ export default function Login() {
                   form={loginPasswordForm}
                   loginId={loginId}
                   loginType={loginType}
-                  onChangeLoginWithOption={onChangeLoginWithOption}
+                  onChangeLoginWithOption={sendOTPMutation}
                 />
               )}
 
@@ -128,6 +142,7 @@ export default function Login() {
                   loginId={loginId}
                   loginType={loginType}
                   onChangeLoginWithOption={onChangeLoginWithOption}
+                  sendOTPMutation={sendOTPMutation}
                 />
               )}
             </div>

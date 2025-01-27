@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import jwt from 'jsonwebtoken';
 import { handleError } from "../utils/utils.js";
 import { sendOtpEmail } from "../services/nodemailer/nodemailer.service.js";
+import { sendSMS } from "../services/twilio/twilio.service.js";
 
 
 /* CREATE TABLE users (
@@ -142,10 +143,12 @@ export const sendOTP = async (req, res) => {
             return res.status(500).json({ code: 'OTP_STORE_FAILED', message: 'Failed to store OTP' });
         }
 
+        const message = `${otp} is your verification code. This code will expire in 5 minutes`
+
         if (loginType === 'EMAIL') {
             response = await sendOtpEmail({ toEmail: loginId, otp });
         } else {
-            // Handle mobile OTP sending logic
+            response = await sendSMS({ to: loginId, body: message })
         }
 
         if (!response) {
@@ -165,15 +168,15 @@ export const sendOTP = async (req, res) => {
 
 export const verifyOTP = async (req, res) => {
     try {
-        const { otp } = req.body;
+        const { OTP } = req.body;
         const sessionId = req.cookies?.otp_session_id;
 
-        if (!sessionId || !otp) {
+        if (!sessionId || !OTP) {
             return res.status(400).json({ code: 'INVALID_REQUEST', message: 'Invalid request' });
         }
 
         const sql = `SELECT * FROM otps WHERE session_id = ? AND otp = ? AND expires_at > NOW()`;
-        const params = [sessionId, otp];
+        const params = [sessionId, OTP];
         const result = await query(sql, params);
 
         if (result.length === 0) {
@@ -182,7 +185,7 @@ export const verifyOTP = async (req, res) => {
 
         // Fetch user details
         const userSql = `SELECT unique_id, first_name, last_name, mobile, email, profile_picture FROM users WHERE email = ? OR mobile = ?`;
-        const userParams = [result[0].loginId, result[0].loginId];
+        const userParams = [result[0].login_id, result[0].login_id];
         const userResult = await query(userSql, userParams);
 
         if (userResult.length === 0) {
@@ -190,7 +193,7 @@ export const verifyOTP = async (req, res) => {
         }
 
         // Create session and tokens for OTP-based login
-        const newSessionId = await userSessionsManager(req, res, { ...userResult[0], loginId: result[0].loginId, loginType: result[0].loginType });
+        const newSessionId = await userSessionsManager(req, res, { ...userResult[0], loginId: result[0].login_id, loginType: result[0].login_type });
 
         // Check if session creation failed
         if (!newSessionId) {

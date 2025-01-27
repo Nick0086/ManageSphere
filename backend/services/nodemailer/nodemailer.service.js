@@ -3,6 +3,8 @@ import { transporter } from "../../config/nodemailer.js";
 export const sendOtpEmail = async ({ toEmail, otp }) => {
   try {
 
+    console.log(toEmail,process.env.NODEMAILER_AUTH_USER)
+
     const emailTemplate = `
     <!DOCTYPE html>
     <html>

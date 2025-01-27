@@ -5,6 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import ReusableFormField from '@/common/Form/ReusableFormField';
 import { useInterval } from 'usehooks-ts';
+import { verifyOPT } from '@/service/auth.service';
+import { useMutation } from '@tanstack/react-query';
+import { toastError, toastSuccess } from '@/utils/toast-utils';
+import { useNavigate } from 'react-router';
 
 // Constants
 const INITIAL_ERROR_STATE = {
@@ -14,20 +18,47 @@ const INITIAL_ERROR_STATE = {
 
 export default function LoginWithOTP({
     form,
+    sendOTPMutation,
     onChangeLoginWithOption,
     loginId,
     loginType,
 }) {
     const [errors, setErrors] = useState(INITIAL_ERROR_STATE);
-    const [resendTimer, setresendTimer] = useState(60);
+    const [resendTimer, setresendTimer] = useState(10);
+    const navigate = useNavigate();
+
+    const loginWithOTPMutation = useMutation({
+        mutationFn: verifyOPT,
+        onSuccess: () => {
+            toastSuccess('Login Successful');
+            navigate(`/`);
+        },
+        onError: (error) => {
+            console.error("Error in verifying login id:", error);
+            toastError(`Error in verifying login id: ${JSON.stringify(error)}`);
+
+            const errorMessage =
+                error?.err?.status === 404 || error?.err?.status === 401
+                    ? error?.err?.message
+                    : error?.err?.error || error?.err?.message || 'Something went wrong';
+
+            setErrors(prev => ({
+                ...prev,
+                error: true,
+                message: errorMessage
+            }));
+        }
+    });
 
     const onSubmitForm = (data) => {
         console.log("LoginWithOTP --> onSubmitForm", data);
-        // Add OTP verification logic here
+        loginWithOTPMutation.mutate(data);
     };
 
-    const onResendOTPhandler = () => {
+    const onResendOTPhandler = async () => {
+        await sendOTPMutation.mutateAsync({ loginId, loginType })
         setresendTimer(60)
+        resetError()
     }
 
     const resetError = () => {
@@ -52,6 +83,7 @@ export default function LoginWithOTP({
                         labelClassName='text-xs text-gray-600'
                         className='w-full'
                         onValueChange={resetError}
+                        disabled={loginWithOTPMutation?.isPending || sendOTPMutation?.isPending}
                     />
 
                     {errors?.error && (
@@ -62,10 +94,13 @@ export default function LoginWithOTP({
                 </div>
 
                 <Button
+
                     className='w-full'
                     variant="primary"
                     type='submit'
                     loadingText=' '
+                    disabled={loginWithOTPMutation?.isPending || sendOTPMutation?.isPending}
+                    isLoading={loginWithOTPMutation?.isPending}
                 >
                     Verify
                 </Button>
@@ -76,6 +111,7 @@ export default function LoginWithOTP({
                         type='button'
                         variant="none"
                         size="sm"
+                        disabled={loginWithOTPMutation?.isPending || sendOTPMutation?.isPending}
                         className="text-blue-600 font-semibold p-0"
                     >
                         Sign in using password
@@ -93,6 +129,9 @@ export default function LoginWithOTP({
                                 size="sm"
                                 className="text-blue-600 font-semibold p-0"
                                 onClick={onResendOTPhandler}
+                                loadingText=' '
+                                disabled={loginWithOTPMutation?.isPending || sendOTPMutation?.isPending}
+                                isLoading={sendOTPMutation?.isPending}
                             >
                                 Resend OTP
                             </Button>
