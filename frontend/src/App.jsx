@@ -11,11 +11,13 @@ import Dashboard from './components/Dashboard/Dashboard';
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
 import TaskManagerIndex from './components/TaskManager/TaskManagerIndex';
+import ResetPassword from './components/Authentication/ResetPassword';
 
 function App() {
 
   const location = useLocation();
-  const isLoginRoute = location.pathname === "/login" || location.pathname === "/register-user";
+  const restriction = ['login','register-user','reset-password']
+  const isLoginRoute = location.pathname === "/login" || location.pathname === "/register-user" || location.pathname === '/reset-password';
   console.log({ isLoginRoute }, location.pathname)
 
   return (
@@ -41,6 +43,7 @@ function App() {
           <Routes>
             <Route exact path="/login" element={<Login />} />
             <Route exact path="/register-user" element={<SignIn />} />
+            <Route exact path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<Navigate to="/login" />} />
           </Routes>
         )

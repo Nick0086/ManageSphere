@@ -6,7 +6,6 @@ import { handleError } from "../utils/utils.js";
 import { sendOtpEmail } from "../services/nodemailer/nodemailer.service.js";
 import { sendSMS } from "../services/twilio/twilio.service.js";
 
-
 /* CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     unique_id CHAR(36) NOT NULL UNIQUE,  -- UUID as a unique identifier
@@ -46,6 +45,14 @@ import { sendSMS } from "../services/twilio/twilio.service.js";
     login_id VARCHAR(45) NOT NULL,
     expires_at TIMESTAMP NOT NULL
 ); */
+
+/* CREATE TABLE password_reset_tokens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id CHAR(36) NOT NULL,  -- Reference to users.unique_id
+    token CHAR(36) NOT NULL UNIQUE,  -- UUID as a unique identifier
+    expires_at TIMESTAMP NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(unique_id)
+);*/
 
 const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -212,6 +219,7 @@ export const verifyOTP = async (req, res) => {
     }
 }
 
+
 const userSessionsManager = async (req, res, userData) => {
     try {
         const sessionId = uuidv4();
@@ -263,7 +271,6 @@ const userSessionsManager = async (req, res, userData) => {
     }
 };
 
-
 export const userActiveSessionCheck = async (req, res) => {
     try {
         const { unique_id } = req.user;
@@ -285,3 +292,81 @@ export const userActiveSessionCheck = async (req, res) => {
     }
 
 }
+
+export const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.params;
+
+        if (!email) {
+            return res.status(400).json({ code: 'INVALID_REQUEST', message: 'Email is required' });
+        }
+
+        const sql = `SELECT unique_id, email FROM users WHERE email = ?`;
+        const params = [email];
+        const result = await query(sql, params);
+
+        if (result.length === 0) {
+            return res.status(404).json({ code: 'USER_NOT_FOUND', message: 'User not found' });
+        }
+
+        const user = result[0];
+
+        const resetToken = uuidv4();
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+        // Store the reset token in the database
+        const tokenSql = `INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES (?, ?, ?)`;
+        const tokenParams = [user.unique_id, resetToken, expiresAt];
+        const response = await query(tokenSql, tokenParams);
+
+        // Send the reset password email
+        const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+
+        const emailResponse = await sendOtpEmail({
+            toEmail: user.email,
+            subject: 'Password Reset Request',
+            otp: resetLink,
+            type:"reset"
+        });
+
+        if (!emailResponse) {
+            return res.status(500).json({ code: 'EMAIL_SEND_FAILED', message: 'Failed to send reset password email' });
+        }
+
+        return res.status(200).json({ code: 'RESET_EMAIL_SENT', message: 'Password reset email sent successfully' });
+    } catch (error) {
+        handleError("auth.controller.js", 'forgotPassword', res, error, 'Error in forgotPassword');
+    }
+};
+
+export const resetPassword = async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+
+        if (!token || !newPassword) {
+            return res.status(400).json({ code: 'INVALID_REQUEST', message: 'Token and new password are required' });
+        }
+
+        const tokenSql = `SELECT * FROM password_reset_tokens WHERE token = ? AND expires_at > NOW()`;
+        const tokenParams = [token];
+        const tokenResult = await query(tokenSql, tokenParams);
+
+        if (tokenResult.length === 0) {
+            return res.status(401).json({ code: 'INVALID_TOKEN', message: 'Invalid or expired token' });
+        }
+
+        const tokenData = tokenResult[0];
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        const updateSql = `UPDATE users SET password = ? WHERE unique_id = ?`;
+        const updateParams = [hashedPassword, tokenData.user_id];
+        await query(updateSql, updateParams);
+
+        const deleteSql = `DELETE FROM password_reset_tokens WHERE token = ?`;
+        await query(deleteSql, [token]);
+
+        return res.status(200).json({ code: 'PASSWORD_RESET', message: 'Password reset successfully' });
+
+    } catch (error) {
+        handleError("auth.controller.js", 'resetPassword', res, error, 'Error in resetPassword');
+    }
+};

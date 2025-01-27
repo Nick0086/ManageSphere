@@ -39,3 +39,11 @@ CREATE TABLE otps (
     login_id VARCHAR(45) NOT NULL,
     expires_at TIMESTAMP NOT NULL
 );
+
+CREATE TABLE password_reset_tokens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id CHAR(36) NOT NULL,  -- Reference to users.unique_id
+    token CHAR(36) NOT NULL UNIQUE,  -- UUID as a unique identifier
+    expires_at TIMESTAMP NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(unique_id)
+);
