@@ -3,6 +3,7 @@ import { Sidebar as SidebarComponent, SidebarContent, SidebarGroup, SidebarHeade
 import { LayoutDashboard, ListTodo } from 'lucide-react'
 import { Separator } from '../ui/separator'
 import { Link, useLocation } from 'react-router'
+import { UserNav } from '../ui/Layouts/user-nav'
 
 const sideBarData = [
     {
@@ -80,6 +81,8 @@ export default function Sidebar({ children }) {
                         <Separator orientation="vertical" className="mr-2 h-4" />
                     </div>
                     <div className="flex gap-2 flex-1 items-center justify-end">
+                        <Separator orientation="vertical" className="h-6" />
+                        <UserNav />
                     </div>
                 </header>
                 <div className="flex-1 overflow-auto md:p-2 lg:p-4">

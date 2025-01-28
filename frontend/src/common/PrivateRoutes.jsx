@@ -16,6 +16,7 @@ export function PrivateRoutes() {
             setIsLoading(false);
         },
         onError: (error) => {
+            window.localStorage.removeItem('userData')
             console.error("Error while checking user token", error);
             setIsAuthenticated(false);
             setIsLoading(false);

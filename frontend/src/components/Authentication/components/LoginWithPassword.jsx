@@ -33,7 +33,8 @@ export default function LoginWithPassword({
 
     const loginWithPasswordMutation = useMutation({
         mutationFn: verifyPassword,
-        onSuccess: () => {
+        onSuccess: (res) => {
+            window.localStorage.setItem('userData', JSON.stringify(res?.data?.userData));
             toastSuccess('Login Successful');
             navigate(`/`);
         },

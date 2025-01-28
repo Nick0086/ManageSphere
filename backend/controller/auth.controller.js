@@ -65,7 +65,7 @@ const COOKIE_OPTIONS = {
 
 export const checkUserEmailOrNumber = async (req, res) => {
     try {
-        const { loginType, loginId } = req.body;
+        const { loginId } = req.body;
 
         const sql = `SELECT unique_id, first_name, last_name, mobile, email FROM users WHERE email = ? OR mobile = ?`;
         const params = [loginId, loginId];
@@ -110,7 +110,7 @@ export const verifyPassword = async (req, res) => {
             return res.status(500).json({ code: 'SESSION_NOT_CREATED', message: 'Failed to create session' });
         }
 
-        return res.status(200).json({ code: 'PASSWORD_VERIFIED', message: 'Password verified' });
+        return res.status(200).json({ code: 'PASSWORD_VERIFIED', message: 'Password verified' , userData : result });
     }
     catch (error) {
         console.log("Error in verifyPassword: ", error);
@@ -212,13 +212,13 @@ export const verifyOTP = async (req, res) => {
         return res.status(200).json({
             code: 'OTP_VERIFIED',
             message: 'OTP verified successfully',
-            sessionId: newSessionId
+            sessionId: newSessionId,
+            userData : result
         });
     } catch (error) {
         handleError("auth.controller.js", 'verifyOTP', res, error, 'Error in verifyOTP');
     }
 }
-
 
 const userSessionsManager = async (req, res, userData) => {
     try {
@@ -370,3 +370,24 @@ export const resetPassword = async (req, res) => {
         handleError("auth.controller.js", 'resetPassword', res, error, 'Error in resetPassword');
     }
 };
+
+export const logOut = async (req,res) => {
+    try {
+
+        const userAgent = req.headers['user-agent'] || 'Unknown';
+        const unique_id = req.user?.unique_id
+
+        const revokeSql = `UPDATE user_sessions SET  is_revoke = ? WHERE  user_id = ? AND user_agent = ?`;
+        const revokeParams = [1, unique_id, userAgent];
+        const response = await query(revokeSql, revokeParams);
+
+        if(response?.affectedRows > 0){
+            return res.status(200).json({ code: 'LOGOUT_SUCCESS', message: 'You have been logged out successfully.'})
+        }else{
+            return res.status(400).json({ code: 'LOGOUT_FAILED', message: 'Failed to log out.'})
+        }
+
+    } catch (error) {
+        handleError("auth.controller.js", 'logOut', res, error, 'Error in logOut');
+    }
+}

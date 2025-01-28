@@ -45,6 +45,7 @@ api.interceptors.response.use(
             console.log("401 detected, signing out...");
             toast.error("Session expired, please sign in again");
             window.localStorage.clear();
+            window.localStorage.removeItem('userData')
             window.location.href = "/login";
         }
         return Promise.reject(error);

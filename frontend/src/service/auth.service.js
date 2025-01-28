@@ -62,3 +62,12 @@ export const resetPassword = async (userData) => {
         throw handleApiError(error)
     }
 }
+
+export const logOut = async () => {
+    try {
+        const response = await authApi.get('/auth/log-out');
+        return { success: true, data: response.data };
+    } catch (error) {
+        throw handleApiError(error)
+    }
+}
