@@ -110,7 +110,7 @@ export const verifyPassword = async (req, res) => {
             return res.status(500).json({ code: 'SESSION_NOT_CREATED', message: 'Failed to create session' });
         }
 
-        return res.status(200).json({ code: 'PASSWORD_VERIFIED', message: 'Password verified' , userData : result });
+        return res.status(200).json({ code: 'PASSWORD_VERIFIED', message: 'Password verified' , userData : result[0] });
     }
     catch (error) {
         console.log("Error in verifyPassword: ", error);
@@ -213,7 +213,7 @@ export const verifyOTP = async (req, res) => {
             code: 'OTP_VERIFIED',
             message: 'OTP verified successfully',
             sessionId: newSessionId,
-            userData : result
+            userData : result[0]
         });
     } catch (error) {
         handleError("auth.controller.js", 'verifyOTP', res, error, 'Error in verifyOTP');

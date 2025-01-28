@@ -28,7 +28,7 @@ const getInitials = (name) => {
 };
 
 export function UserNav() {
-  const [userDetails, setUserDetails] = React.useState(() => window?.localStorage.getItem("userData"));
+  const [userDetails, setUserDetails] = React.useState(() => JSON.parse(window?.localStorage.getItem("userData") || "{}"));
   const navigate = useNavigate();
 
 
