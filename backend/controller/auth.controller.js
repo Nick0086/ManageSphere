@@ -213,7 +213,7 @@ export const verifyOTP = async (req, res) => {
             code: 'OTP_VERIFIED',
             message: 'OTP verified successfully',
             sessionId: newSessionId,
-            userData : result[0]
+            userData : userResult[0]
         });
     } catch (error) {
         handleError("auth.controller.js", 'verifyOTP', res, error, 'Error in verifyOTP');
