@@ -1,21 +1,34 @@
 import React from 'react'
 import { Sidebar as SidebarComponent, SidebarContent, SidebarGroup, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '../ui/sidebar'
-import { LayoutDashboard, ListTodo } from 'lucide-react'
+import {  ListTodo } from 'lucide-react'
 import { Separator } from '../ui/separator'
 import { Link, useLocation } from 'react-router'
 import { UserNav } from '../ui/Layouts/user-nav'
 
+import CafeIcon from '../../assets/SVG/coffee-cup-coffee.svg?react';
+import Dashboard from '../../assets/SVG/Dashboard.svg?react';
+
 const sideBarData = [
     {
         title: 'Dashboard',
-        icon: <LayoutDashboard size={16} />,
+        icon: <Dashboard className='size-6' />,
         link: '/dashboard',
         isCollapsible: false,
     },
     {
-        title: 'To-Dos',
+        title: 'Menu ',
         icon: <ListTodo  size={16} />,
-        link: '/todos',
+        link: '/menu',
+        isCollapsible: false,
+    },
+    {
+        title: 'QR Code',
+        link: '/qrcodes',
+        isCollapsible: false,
+    },
+    {
+        title: 'Bill Template',
+        link: '/billing',
         isCollapsible: false,
     },
 ]
@@ -39,12 +52,10 @@ export default function Sidebar({ children }) {
                 <SidebarHeader>
                     <SidebarMenu>
                         <SidebarMenuItem>
-                            <div className="flex justify-center items-center gap-2 my-2">
-                                <Link className="tw-no-underline tw-text-inherit" to={'/'}>
-                                    <b className="text-lg tracking-[0.1em] group-data-[collapsible=icon]:hidden">Managesphere</b>
+                                <Link className="flex justify-center items-center gap-2 my-2 w-full tw-no-underline tw-text-inherit" to={'/'}>
+                                    <CafeIcon className='size-7' />
+                                    <b className="text-lg tracking-[0.1em] group-data-[collapsible=icon]:hidden">CaféBite</b>
                                 </Link>
-                            </div>
-
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarHeader>
