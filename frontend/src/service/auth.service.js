@@ -63,6 +63,15 @@ export const resetPassword = async (userData) => {
     }
 }
 
+export const resetPassowrdTokenCheck = async (token) => {
+    try {
+        const response = await authApi.get(`/check-reset-token/${token}`);
+        return { success: true, data: response.data };
+    } catch (error) {
+        throw handleApiError(error)
+    }
+}
+
 export const logOut = async () => {
     try {
         const response = await authApi.get('/auth/log-out');

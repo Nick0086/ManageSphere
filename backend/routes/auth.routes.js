@@ -1,5 +1,5 @@
 import express from 'express';
-import { checkUserEmailOrNumber, forgotPassword, logOut, resetPassword, sendOTP, userActiveSessionCheck, verifyOTP, verifyPassword } from '../controller/auth.controller.js';
+import { checkResetPasswordToken, checkUserEmailOrNumber, forgotPassword, logOut, resetPassword, sendOTP, userActiveSessionCheck, verifyOTP, verifyPassword } from '../controller/auth.controller.js';
 import { authMiddleware } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
@@ -12,6 +12,7 @@ router.post('/send-otp', sendOTP);
 
 router.get('/forgot-password/:email', forgotPassword)
 router.post('/reset-password', resetPassword)
+router.get('/check-reset-token/:token', checkResetPasswordToken)
 
 router.get('/check-user-session', authMiddleware, userActiveSessionCheck);
 

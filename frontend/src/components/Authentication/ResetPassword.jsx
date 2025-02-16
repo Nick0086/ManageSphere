@@ -8,9 +8,9 @@ import { Card, CardContent, CardHeader } from '../ui/card';
 import { Button } from '../ui/button';
 import { useNavigate, useSearchParams } from 'react-router';
 import PulsatingDots from '../ui/loaders/PulsatingDots';
-import { resetPassword } from '@/service/auth.service';
+import { resetPassowrdTokenCheck, resetPassword } from '@/service/auth.service';
 import { toastError, toastSuccess } from '@/utils/toast-utils';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 const defaultValues = {
     password: '',
@@ -44,16 +44,28 @@ const INITIAL_ERROR_STATE = {
 };
 
 export default function ResetPassword() {
-
+    const userDetails = JSON.parse(window?.localStorage.getItem("userData") || "{}");
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const [isLoading, setIsLoding] = useState(true);
+    const [isShowLoading, setIsShowLoading] = useState(true);
     const [errors, setErrors] = useState(INITIAL_ERROR_STATE);
+    const token = searchParams.get('token');
 
     const form = useForm({
         defaultValues: defaultValues,
         resolver: yupResolver(schema),
     })
+
+    const { data: verifyData, isLoading: isVerifyLoading, error: verifyError } = useQuery({
+        queryKey: ['resetPassowrdTokenCheck', token],
+        queryFn: async () => {
+            const res = await resetPassowrdTokenCheck(token);
+            return res.data;
+        },
+        retry: false,
+        enabled: !!token,
+    });
 
     const resetPasswordMutation = useMutation({
         mutationFn: resetPassword,
@@ -88,20 +100,40 @@ export default function ResetPassword() {
     };
 
     useEffect(() => {
-        const token = searchParams.get('token');
         if (token) {
             setIsLoding(false)
         } else {
-            navigate('/login')
+            if (Object.keys(userDetails)?.length) {
+                navigate('/')
+            } else {
+                navigate('/login')
+            }
         }
     }, [])
 
+    useEffect(() => {
+        if (Object.keys(userDetails)?.length) {
+            navigate('/')
+        } else {
+            if (verifyError) {
+                toastError(verifyError?.response?.data?.message || "Invalid or expired token")
+                navigate('/login')
+            } else {
+                setIsShowLoading(false)
+            }
+        }
 
-    if (isLoading) {
-        <div className="min-h-screen flex items-center justify-center bg-[#F8F9FF] lg:py-6">
-            <PulsatingDots size={6} />
-        </div>
+    }, [verifyError, navigate, userDetails])
+
+
+    if (isLoading || isVerifyLoading || isShowLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#F8F9FF] lg:py-6">
+                <PulsatingDots size={6} />
+            </div>
+        )
     }
+
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-[#F8F9FF] lg:py-6">

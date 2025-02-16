@@ -1,15 +1,16 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useMutation } from '@tanstack/react-query';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { registerUser } from '@/service/user.service';
 import { toastError, toastSuccess } from '@/utils/toast-utils';
 import { Form } from '../ui/form';
 import ReusableFormField from '@/common/Form/ReusableFormField';
 import { Card, CardContent, CardHeader } from '../ui/card';
 import { Button } from '../ui/button';
+import PulsatingDots from '../ui/loaders/PulsatingDots';
 
 const defaultValues = {
     firstName: '',
@@ -42,7 +43,9 @@ const schema = yup.object().shape({
 })
 
 export default function SignIn() {
-
+    const navigate = useNavigate();
+    const userDetails = JSON.parse(window?.localStorage.getItem("userData") || "{}");
+    const [isLoading, setIsLoading] = useState(true);
     const form = useForm({
         defaultValues: defaultValues,
         resolver: yupResolver(schema),
@@ -67,6 +70,21 @@ export default function SignIn() {
         registerUserMutation.mutate(data)
     }
 
+    useEffect(() => {
+        if (Object.keys(userDetails)?.length) {
+            navigate('/')
+        } else {
+            setIsLoading(false)
+        }
+    }, [navigate, userDetails])
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <PulsatingDots size={5} />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-[#F8F9FF] lg:py-6">

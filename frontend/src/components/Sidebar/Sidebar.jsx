@@ -1,8 +1,8 @@
 import React from 'react'
 import { Sidebar as SidebarComponent, SidebarContent, SidebarGroup, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '../ui/sidebar'
-import {  ListTodo } from 'lucide-react'
+import { ListTodo } from 'lucide-react'
 import { Separator } from '../ui/separator'
-import { Link, useLocation } from 'react-router'
+import { Link, Outlet, useLocation } from 'react-router'
 import { UserNav } from '../ui/Layouts/user-nav'
 
 import CafeIcon from '../../assets/SVG/coffee-cup-coffee.svg?react';
@@ -17,7 +17,7 @@ const sideBarData = [
     },
     {
         title: 'Menu ',
-        icon: <ListTodo  size={16} />,
+        icon: <ListTodo size={16} />,
         link: '/menu',
         isCollapsible: false,
     },
@@ -35,7 +35,7 @@ const sideBarData = [
 
 
 
-export default function Sidebar({ children }) {
+export default function Sidebar() {
 
     const location = useLocation()
 
@@ -52,10 +52,10 @@ export default function Sidebar({ children }) {
                 <SidebarHeader>
                     <SidebarMenu>
                         <SidebarMenuItem>
-                                <Link className="flex justify-center items-center gap-2 my-2 w-full tw-no-underline tw-text-inherit" to={'/'}>
-                                    <CafeIcon className='size-7' />
-                                    <b className="text-lg tracking-[0.1em] group-data-[collapsible=icon]:hidden">CaféBite</b>
-                                </Link>
+                            <Link className="flex justify-center items-center gap-2 my-2 w-full tw-no-underline tw-text-inherit" to={'/'}>
+                                <CafeIcon className='size-7' />
+                                <b className="text-lg tracking-[0.1em] group-data-[collapsible=icon]:hidden">CaféBite</b>
+                            </Link>
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarHeader>
@@ -96,9 +96,9 @@ export default function Sidebar({ children }) {
                         <UserNav />
                     </div>
                 </header>
-                <div className="flex-1 overflow-auto md:p-2 lg:p-4">
-                    {children}
-                </div>
+                <main className="flex-1 overflow-auto md:p-2 lg:p-4">
+                    <Outlet />
+                </main>
             </SidebarInset>
         </SidebarProvider>
     )

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -12,6 +12,8 @@ import LoginWithOTP from './components/LoginWithOTP';
 import { useMutation } from '@tanstack/react-query';
 import { sendOTP } from '@/service/auth.service';
 import { toastError, toastSuccess } from '@/utils/toast-utils';
+import { useNavigate } from 'react-router';
+import PulsatingDots from '../ui/loaders/PulsatingDots';
 
 // Constants
 const DEFAULT_VALUES = {
@@ -45,6 +47,9 @@ const VALIDATION_SCHEMAS = {
 };
 
 export default function Login() {
+  const navigate = useNavigate();
+  const userDetails = JSON.parse(window?.localStorage.getItem("userData") || "{}");
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoginIdVerified, setIsLoginIdVerified] = useState(false);
   const [isLoginWithOTP, setIsLoginWithOTP] = useState(false);
 
@@ -91,6 +96,23 @@ export default function Login() {
       toastError(`Error in Send OTP to ${loginId} : ${JSON.stringify(error)}`);
     }
   })
+
+
+  useEffect(() => {
+    if (Object.keys(userDetails)?.length) {
+      navigate('/')
+    } else {
+      setIsLoading(false)
+  }
+  }, [navigate, userDetails])
+
+  if (isLoading) {
+          return (
+              <div className="flex justify-center items-center h-screen">
+                  <PulsatingDots size={5} />
+              </div>
+          );
+      }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F8F9FF]">

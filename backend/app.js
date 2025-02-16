@@ -3,6 +3,7 @@ import cors from 'cors'
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { rateLimit } from 'express-rate-limit'
+import { v4 as uuid } from 'uuid';
 
 import userRoutes from './routes/user.routes.js'
 import authRoutes from './routes/auth.routes.js'
@@ -15,7 +16,7 @@ const limiter = rateLimit({
 const app = express();
 
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173', 'http://localhost:8080', 'http://localhost:5174'],
+    origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173', 'http://localhost:8080', 'http://localhost:5174',process.env.FRONTEND_DOMAIN],
     credentials: true
 }))
 

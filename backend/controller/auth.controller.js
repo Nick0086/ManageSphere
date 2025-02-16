@@ -277,6 +277,10 @@ export const userActiveSessionCheck = async (req, res) => {
         const userAgent = req.headers['user-agent'] || 'Unknown';
         const refreshToken = req.cookies?.refreshToken;
 
+        if(!refreshToken || !unique_id){
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
         const revokeSql = `SELECT * FROM user_sessions WHERE is_revoke = 0 AND user_id = ? AND user_agent = ? AND refresh_token = ?`;
         const revokeParams = [unique_id, userAgent, refreshToken];
         const response = await query(revokeSql, revokeParams);
@@ -370,6 +374,24 @@ export const resetPassword = async (req, res) => {
         handleError("auth.controller.js", 'resetPassword', res, error, 'Error in resetPassword');
     }
 };
+
+export const checkResetPasswordToken = async (req,res) => {
+    const { token } = req.params;
+
+        if (!token) {
+            return res.status(400).json({ code: 'INVALID_REQUEST', message: 'Token are required' });
+        }
+
+        const tokenSql = `SELECT * FROM password_reset_tokens WHERE token = ? AND expires_at > NOW()`;
+        const tokenParams = [token];
+        const tokenResult = await query(tokenSql, tokenParams);
+
+        if (tokenResult.length === 0) {
+            return res.status(401).json({ code: 'INVALID_TOKEN', message: 'Invalid or expired token' });
+        }
+
+        return res.status(200).json({ code: 'VALID_TOKEN', message: 'Token are valid' });
+}
 
 export const logOut = async (req,res) => {
     try {
