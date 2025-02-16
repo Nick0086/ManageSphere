@@ -59,14 +59,15 @@ export const authMiddleware = async (req, res, next) => {
                         req.user = decodedRefresh.userDetails;
                         return next(); // Proceed to the next middleware/route
                     } catch (refreshTokenError) {
+                        clearAuthCookies(res)
                         return res.status(401).json({ code: 'UNAUTHORIZED', message: 'Invalid or expired refresh token' });
                     }
                 } else {
+                    clearAuthCookies(res)
                     return res.status(401).json({ code: 'UNAUTHORIZED', message: 'Invalid access token' });
                 }
             }
         }
-
         return res.status(401).json({ code: 'UNAUTHORIZED', message: 'Unauthorized' });
     } catch (error) {
         console.error('Error in authMiddleware:', error);
@@ -78,4 +79,4 @@ export const authMiddleware = async (req, res, next) => {
 const clearAuthCookies = (res) => {
     res.clearCookie('accessToken', COOKIE_OPTIONS);
     res.clearCookie('refreshToken', COOKIE_OPTIONS);
-  };
+};

@@ -204,7 +204,7 @@ export const verifyOneTimePassword = async (req, res) => {
         }
 
         // Create session and tokens for OTP-based login
-        const sessionId = await createUserSession(req, res, { ...userResults[0], loginId: result[0].login_id, loginType: result[0].login_type });
+        const sessionId = await createUserSession(req, res, { ...userResults[0], loginId: otpResults[0].login_id, loginType: otpResults[0].login_type });
 
         // Check if session creation failed
         if (!sessionId) {

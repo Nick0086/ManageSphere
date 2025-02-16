@@ -58,6 +58,7 @@ export default function SignIn() {
         mutationFn: registerUser,
         onSuccess: () => {
             toastSuccess(`Registertion Of ${firstName} ${lastName} successfully`);
+            navigate('/login')
             form.reset(defaultValues);
         },
         onError: (error) => {
