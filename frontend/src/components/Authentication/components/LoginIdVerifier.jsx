@@ -83,7 +83,7 @@ export default function LoginIdVerifier({ form, setIsLoginIdVerified }) {
                         options={LOGIN_TYPE_OPTIONS}
                         coustomValue={loginType === 'EMAIL' ? <Mail size={20} /> : <Phone size={20} />}
                         label=''
-                        labelClassName='text-xs text-gray-600'
+                        labelClassName='text-xs'
                         placeholder='Email Address'
                         onValueChange={handleLoginTypeChange}
                     />
@@ -94,7 +94,7 @@ export default function LoginIdVerifier({ form, setIsLoginIdVerified }) {
                             name='loginId'
                             type='email'
                             label=''
-                            labelClassName='text-xs text-gray-600'
+                            labelClassName='text-xs'
                             placeholder='Email Address'
                             className='w-full'
                             onValueChange={resetError}
@@ -105,7 +105,7 @@ export default function LoginIdVerifier({ form, setIsLoginIdVerified }) {
                             name='loginId'
                             type='PhoneInput'
                             label=''
-                            labelClassName='text-xs text-gray-600'
+                            labelClassName='text-xs'
                             className='w-full'
                             onValueChange={resetError}
                         />
@@ -113,7 +113,7 @@ export default function LoginIdVerifier({ form, setIsLoginIdVerified }) {
                 </div>
 
                 {errors.error && (
-                    <div className='text-red-500 text-[0.8rem] font-medium text-destructive'>
+                    <div className='text-status-danger text-[0.8rem] font-medium'>
                         {errors.message}
                     </div>
                 )}
@@ -129,9 +129,9 @@ export default function LoginIdVerifier({ form, setIsLoginIdVerified }) {
                     Next
                 </Button>
 
-                <p className="text-center text-sm text-gray-500 mt-4">
+                <p className="text-center text-sm text-secondary mt-4">
                     Don't have an account yet?{' '}
-                    <Link to='/register-user' className="text-blue-500 hover:text-blue-600">
+                    <Link to='/register-user' className="text-brand-primary hover:text-brand-primary-foreground">
                         Create Account
                     </Link>
                 </p>

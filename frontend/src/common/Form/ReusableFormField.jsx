@@ -272,9 +272,9 @@ const ReusableFormField = ({
             render={({ field }) => (
                 <FormItem className={cn("space-y-0", className)} {...formItemProps}>
                     <div className={cn("w-full", containerClassName)}>
-                        <FormLabel className={cn("text-sm", labelClassName)} {...labelProps}>
+                        <FormLabel className={cn("text-sm text-secondary", labelClassName)} {...labelProps}>
                             {label}
-                            {required && <sup className="text-red-500 text-sm -top-0">*</sup>}
+                            {required && <sup className="text-status-danger text-sm -top-0">*</sup>}
                             {tooltipText && (
                                 <>
                                     <Info
@@ -282,7 +282,7 @@ const ReusableFormField = ({
                                         data-tooltip-class-name='break-all max-w-56'
                                         data-tooltip-place='right'
                                         data-tooltip-content={tooltipText}
-                                        className="inline ml-1 cursor-pointer text-gray-500"
+                                        className="inline ml-1 cursor-pointer text-secondary"
                                         size={14}
                                     />
                                     <Tooltip id={`reusable-form-filed-tooltip-${name}`} />

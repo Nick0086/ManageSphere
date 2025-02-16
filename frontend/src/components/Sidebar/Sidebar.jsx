@@ -53,7 +53,7 @@ export default function Sidebar() {
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <Link className="flex justify-center items-center gap-2 my-2 w-full tw-no-underline tw-text-inherit" to={'/'}>
-                                <CafeIcon className='size-7' />
+                                <CafeIcon/>
                                 <b className="text-lg tracking-[0.1em] group-data-[collapsible=icon]:hidden">CaféBite</b>
                             </Link>
                         </SidebarMenuItem>

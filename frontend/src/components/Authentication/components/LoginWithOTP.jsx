@@ -81,14 +81,14 @@ export default function LoginWithOTP({
                         name='OTP'
                         type='OTP'
                         label=''
-                        labelClassName='text-xs text-gray-600'
+                        labelClassName='text-xs '
                         className='w-full'
                         onValueChange={resetError}
                         disabled={loginWithOTPMutation?.isPending || sendOTPMutation?.isPending}
                     />
 
                     {errors?.error && (
-                        <div className='text-red-500 text-[0.8rem] font-medium text-destructive'>
+                        <div className='text-status-danger text-[0.8rem] font-medium'>
                             {errors.message}
                         </div>
                     )}
@@ -113,14 +113,14 @@ export default function LoginWithOTP({
                         variant="none"
                         size="sm"
                         disabled={loginWithOTPMutation?.isPending || sendOTPMutation?.isPending}
-                        className="text-blue-600 font-semibold p-0"
+                        className="text-brand-primary hover:text-brand-primary-foreground font-semibold p-0"
                     >
                         Sign in using password
                     </Button>
 
                     {
                         resendTimer > 0 ? (
-                            <span className='text-gray-600 text-sm font-semibold'>
+                            <span className='text-secondary text-sm font-semibold'>
                                 Resend in {resendTimer}s
                             </span>
                         ) : (
@@ -128,7 +128,7 @@ export default function LoginWithOTP({
                                 type='button'
                                 variant="none"
                                 size="sm"
-                                className="text-blue-600 font-semibold p-0"
+                                className="text-brand-primary hover:text-brand-primary-foreground font-semibold p-0"
                                 onClick={onResendOTPhandler}
                                 loadingText=' '
                                 disabled={loginWithOTPMutation?.isPending || sendOTPMutation?.isPending}

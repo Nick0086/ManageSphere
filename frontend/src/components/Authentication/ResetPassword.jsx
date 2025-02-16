@@ -128,7 +128,7 @@ export default function ResetPassword() {
 
     if (isLoading || isVerifyLoading || isShowLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[#F8F9FF] lg:py-6">
+            <div className="min-h-screen flex items-center justify-center bg-surface-background lg:py-6">
                 <PulsatingDots size={6} />
             </div>
         )
@@ -136,23 +136,23 @@ export default function ResetPassword() {
 
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#F8F9FF] lg:py-6">
+        <div className="min-h-screen flex items-center justify-center bg-surface-background lg:py-6">
             <Card className="w-11/12 md:w-full lg:max-w-md max-w-lg">
                 <CardHeader className="pb-0" >
                     <div className="text-center mb-6">
-                        <h1 className="text-3xl font-bold text-gray-900 mb-2">Reset Password</h1>
+                        <h1 className="text-3xl font-bold text-primary mb-2">Reset Password</h1>
                     </div>
                 </CardHeader>
                 <CardContent className="pt-0">
                     <Form {...form} >
                         <form onSubmit={form.handleSubmit(onSubmitForm)} className='flex flex-col gap-y-2' >
 
-                            <ReusableFormField control={form.control} name='password' type='password' label='Password' labelClassName='text-xs text-gray-600' onValueChange={resetError} disabled={resetPasswordMutation.isPending} />
+                            <ReusableFormField control={form.control} name='password' type='password' label='Password' labelClassName='text-xs' onValueChange={resetError} disabled={resetPasswordMutation.isPending} />
 
-                            <ReusableFormField control={form.control} name='confirmPassword' type='password' label='Confirm Password' labelClassName='text-xs text-gray-600' onValueChange={resetError} disabled={resetPasswordMutation.isPending} />
+                            <ReusableFormField control={form.control} name='confirmPassword' type='password' label='Confirm Password' labelClassName='text-xs' onValueChange={resetError} disabled={resetPasswordMutation.isPending} />
 
                             {errors?.error && (
-                                <div className='text-red-500 text-[0.8rem] font-medium text-destructive'>
+                                <div className='text-status-danger text-[0.8rem] font-medium'>
                                     {errors.message}
                                 </div>
                             )}

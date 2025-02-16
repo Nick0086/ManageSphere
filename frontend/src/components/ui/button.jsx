@@ -19,7 +19,7 @@ const buttonVariants = cva(
         link: "text-blue-500 underline-offset-4 enabled:hover:underline",
         cancel: "bg-gray-200 text-gray-600 enabled:hover:bg-gray-300",
         none: "text-primary",
-        gradient: "bg-gradient-to-r shadow from-indigo-500 to-purple-600 text-white enabled:hover:from-indigo-600 enabled:hover:to-purple-700 enabled:hover:shadow-xl",
+        gradient: "bg-gradient-to-r shadow from-accent-indigo to-purple-600 text-white enabled:hover:from-accent-indigo-foreground enabled:hover:to-purple-700 enabled:hover:shadow-xl",
         grey: "bg-accent text-accent-foreground shadow-sm enabled:hover:bg-accent",
         serchBut: "bg-[#f0f3ff] w-full border-none rounded-none",
         submit: 'bg-[#6777ef] shadow-custom-pri text-white hover:bg-[#394eea] hover:bg-[#394eea] text-xs',
@@ -30,9 +30,9 @@ const buttonVariants = cva(
         danger: "bg-[#fc544b] shadow-custom-red text-white hover:bg-[#fb160a] focus:bg-[#fb160a] ",
         success: "bg-[#54ca68] shadow-custom-green text-white hover:bg-[#41c457] focus:bg-[#41c457] ",
         secondary: "bg-secondary/80 font-bold text-secondary-foreground  hover:bg-secondary text-xs shadow-md",
-        primary: "bg-indigo-500 shadow-custom text-white hover:bg-indigo-600 focus:bg-indigo-600",
-        addBtn: "border border-indigo-500  text-indigo-500 hover:bg-indigo-500 hover:text-white bg-transparent font-bold rounded-lg whitespace-nowrap",
-        iconBtn: "text-white bg-indigo-500 hover:bg-indigo-600 rounded-lg whitespace-nowrap"
+        primary: "bg-accent-indigo shadow-custom text-white hover:bg-accent-indigo-foreground focus:bg-accent-indigo-foreground",
+        addBtn: "border border-accent-indigo  text-accent-indigo hover:bg-accent-indigo hover:text-white bg-transparent font-bold rounded-lg whitespace-nowrap",
+        iconBtn: "text-white bg-accent-indigo hover:bg-accent-indigo-foreground rounded-lg whitespace-nowrap"
       },
       size: {
         default: "px-4 py-2",
@@ -49,7 +49,7 @@ const buttonVariants = cva(
 
       },
       intent: {
-        indigo: "bg-indigo-500 enabled:hover:bg-indigo-600 text-white",
+        indigo: "bg-accent-indigo enabled:hover:bg-accent-indigo-foreground text-white",
         green: "bg-green-500 enabled:hover:bg-green-600 text-white",
         red: "bg-red-500 enabled:hover:bg-red-600 text-white",
         yellow: "bg-yellow-500 enabled:hover:bg-yellow-600 text-white",
@@ -59,7 +59,7 @@ const buttonVariants = cva(
       border: {
         default: " border-input",
         none: "",
-        indigo: "border border-indigo-500 enabled:hover:border-indigo-600 text-indigo-600 enabled:hover:text-indigo-800 enabled:hover:bg-indigo-100",
+        indigo: "border border-accent-indigo enabled:hover:border-accent-indigo-foreground text-accent-indigo-foreground enabled:hover:text-accent-indigo-dark enabled:hover:bg-accent-indigo-light",
         green: "border border-green-500 enabled:hover:border-green-600 text-green-600 enabled:hover:text-green-800 enabled:hover:bg-green-100",
         red: "border border-red-500 enabled:hover:border-red-600 text-red-600 enabled:hover:text-red-800 enabled:hover:bg-red-100",
         yellow: "border border-yellow-500 enabled:hover:border-yellow-600 text-yellow-600 enabled:hover:text-yellow-800 enabled:hover:bg-yellow-100",

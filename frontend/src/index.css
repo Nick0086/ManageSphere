@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -36,7 +37,33 @@
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%}
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Universal Theme Colors */
+    --surface-background: 231 100% 99%;
+    --text-primary: 215.56 31.03% 17.06%;
+    --text-secondary: 215.56 15.43% 34.31%;
+
+    /* Primary Colors */
+    --brand-primary: 216.23 100% 58.43%;
+    --brand-primary-foreground: 221.3 97.47% 53.53%;
+
+    /* Alert / Status Colors */
+    --status-danger: 357.1 96.28% 57.84%;
+    --status-danger-foreground: 357.14 100% 45.29%;
+
+    /* Indigo Shades */
+    --accent-indigo: 240.75 100% 68.63%;
+    --accent-indigo-foreground: 246.98 91.3% 59.41%;
+    --accent-indigo-light: 226.45 100% 93.92%;
+    --accent-indigo-dark: 246 60.75% 41.96%;
+
+    /* Neutral Colors (for dark mode) */
+    --neutral-white: 0 0% 100%;
+    --neutral-black: 0 0% 0%;
+
+  }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -61,8 +88,7 @@
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%
-  ;
+    --chart-5: 340 75% 55%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -70,12 +96,15 @@
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%}
+    --sidebar-ring: 217.2 91.2% 59.8%
+  }
 }
+
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }

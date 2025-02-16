@@ -108,19 +108,19 @@ export default function Login() {
 
   if (isLoading) {
           return (
-              <div className="flex justify-center items-center h-screen">
+              <div className="flex justify-center items-center h-screen bg-surface-background">
                   <PulsatingDots size={5} />
               </div>
           );
       }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F8F9FF]">
+    <div className="min-h-screen flex items-center justify-center bg-surface-background">
       <Card className="w-11/12 md:w-full max-w-md">
         <CardHeader className="pb-0">
           <div className="text-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign in</h1>
-            <p className="text-gray-600 mx-auto text-sm md:max-w-[85%] max-w-[90%]">
+            <h1 className="text-3xl font-bold text-primary mb-2">Sign in</h1>
+            <p className="text-secondary mx-auto text-sm md:max-w-[85%] max-w-[90%]">
               to access your account.
             </p>
           </div>
@@ -136,13 +136,13 @@ export default function Login() {
 
           {isLoginIdVerified && (
             <div className='space-y-4'>
-              <div className="flex items-center justify-between w-fit gap-2 py-1 px-2 border border-indigo-200 rounded-md">
+              <div className="flex items-center justify-between w-fit gap-2 py-1 px-2 border border-input rounded-md">
                 <span className='w-fit px-2'>{loginId}</span>
                 <Button
                   type='button'
                   variant="none"
                   size="sm"
-                  className="text-blue-600 font-semibold"
+                  className="text-brand-primary font-semibold"
                   onClick={resetForms}
                 >
                   Change

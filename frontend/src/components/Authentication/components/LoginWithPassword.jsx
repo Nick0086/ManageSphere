@@ -95,12 +95,12 @@ export default function LoginWithPassword({
                         type='password'
                         label='Password'
                         disabled={loginWithPasswordMutation?.isPending || onChangeLoginWithOption.isPending || forgotPasswordMutation.isPending}
-                        labelClassName='text-xs text-gray-600'
+                        labelClassName='text-xs'
                         onValueChange={resetError}
                     />
 
                     {errors?.error && (
-                        <div className='text-red-500 text-[0.8rem] font-medium text-destructive'>
+                        <div className='text-status-danger text-[0.8rem] font-medium '>
                             {errors.message}
                         </div>
                     )}
@@ -126,7 +126,7 @@ export default function LoginWithPassword({
                         isLoading={onChangeLoginWithOption.isPending}
                         loadingText=' '
                         disabled={onChangeLoginWithOption.isPending || forgotPasswordMutation.isPending}
-                        className="text-blue-600 font-semibold p-0"
+                        className="text-brand-primary hover:text-brand-primary-foreground font-semibold p-0"
                     >
                         Sign in using {LOGIN_ID_MAP[loginType]} OTP
                     </Button>
@@ -139,7 +139,7 @@ export default function LoginWithPassword({
                         loadingText=' '
                         isLoading={forgotPasswordMutation.isPending}
                         disabled={onChangeLoginWithOption.isPending || forgotPasswordMutation.isPending}
-                        className="text-blue-600 font-semibold p-0"
+                        className="text-brand-primary hover:text-brand-primary-foreground font-semibold p-0"
                     >
                         Forgot Password?
                     </Button>
