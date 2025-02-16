@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import ReusableFormField from '@/common/Form/ReusableFormField';
 import { useInterval } from 'usehooks-ts';
-import { verifyOPT } from '@/service/auth.service';
+import { verifyOneTimePassword } from '@/service/auth.service';
 import { useMutation } from '@tanstack/react-query';
 import { toastError, toastSuccess } from '@/utils/toast-utils';
 import { useNavigate } from 'react-router';
@@ -28,7 +28,7 @@ export default function LoginWithOTP({
     const navigate = useNavigate();
 
     const loginWithOTPMutation = useMutation({
-        mutationFn: verifyOPT,
+        mutationFn: verifyOneTimePassword,
         onSuccess: (res) => {
             window.localStorage.setItem('userData', JSON.stringify(res?.data?.userData));
             toastSuccess('Login Successful');

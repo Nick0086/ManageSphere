@@ -10,7 +10,7 @@ import LoginIdVerifier from './components/LoginIdVerifier';
 import LoginWithPassword from './components/LoginWithPassword';
 import LoginWithOTP from './components/LoginWithOTP';
 import { useMutation } from '@tanstack/react-query';
-import { sendOTP } from '@/service/auth.service';
+import { sendOneTimePassword } from '@/service/auth.service';
 import { toastError, toastSuccess } from '@/utils/toast-utils';
 import { useNavigate } from 'react-router';
 import PulsatingDots from '../ui/loaders/PulsatingDots';
@@ -87,7 +87,7 @@ export default function Login() {
   };
 
   const sendOTPMutation = useMutation({
-    mutationFn: sendOTP,
+    mutationFn: sendOneTimePassword,
     onSuccess: () => {
       toastSuccess(`OTP sent successfully :- ${loginId}`)
       onChangeLoginWithOption(true)

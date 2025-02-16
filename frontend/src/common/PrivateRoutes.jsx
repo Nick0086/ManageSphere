@@ -1,5 +1,5 @@
 import PulsatingDots from "@/components/ui/loaders/PulsatingDots";
-import { checkUserToken } from "@/service/auth.service";
+import { checkUserSession  } from "@/service/auth.service";
 import { useMutation } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { Navigate, Outlet, useLocation } from "react-router";
@@ -10,7 +10,7 @@ export function PrivateRoutes() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     const userCheckMutation = useMutation({
-        mutationFn: checkUserToken,
+        mutationFn: checkUserSession ,
         onSuccess: () => {
             setIsAuthenticated(true);
             setIsLoading(false);

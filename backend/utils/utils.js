@@ -18,5 +18,5 @@ export const getCurrentTime = () => {
 // Helper function to handle errors
 export const handleError = (fnName,controllerName, res, error, message = "Internal server error") => {
     console.log(`${getCurrentTime()} :: Error in ${controllerName} in function ${fnName}: `, error);
-    return res.status(500).json({ success: false, message, error: error.message });
+    return res.status(500).json({code: 'SERVER_ERROR',success: false, message, error: error.message });
 };

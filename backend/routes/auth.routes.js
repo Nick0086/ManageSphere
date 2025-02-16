@@ -1,21 +1,22 @@
 import express from 'express';
-import { checkResetPasswordToken, checkUserEmailOrNumber, forgotPassword, logOut, resetPassword, sendOTP, userActiveSessionCheck, verifyOTP, verifyPassword } from '../controller/auth.controller.js';
+import { checkUserExists, logoutUser, performPasswordReset, requestPasswordReset, sendOneTimePassword, validateActiveUserSession, validatePasswordResetToken, verifyOneTimePassword, verifyUserPassword } from '../controller/auth.controller.js';
 import { authMiddleware } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
-router.post('/check-user', checkUserEmailOrNumber);
-router.post('/verify-password', verifyPassword);
-router.post('/verify-otp', verifyOTP);
+// User Authentication Routes
+router.post('/user/check', checkUserExists);
+router.post('/user/verify-password', verifyUserPassword);
+router.post('/user/send-otp', sendOneTimePassword);
+router.post('/user/verify-otp', verifyOneTimePassword);
 
-router.post('/send-otp', sendOTP);
+// Password Management Routes
+router.get('/password/forgot/:email', requestPasswordReset);
+router.post('/password/reset', performPasswordReset);
+router.get('/password/check-reset-token/:token', validatePasswordResetToken);
 
-router.get('/forgot-password/:email', forgotPassword)
-router.post('/reset-password', resetPassword)
-router.get('/check-reset-token/:token', checkResetPasswordToken)
-
-router.get('/check-user-session', authMiddleware, userActiveSessionCheck);
-
-router.get('/log-out', authMiddleware, logOut);
+// Session Management Routes
+router.get('/session/active', authMiddleware, validateActiveUserSession);
+router.get('/session/logout', authMiddleware, logoutUser);
 
 export default router;

@@ -7,7 +7,7 @@ import { Form } from '@/components/ui/form';
 import ReusableFormField from '@/common/Form/ReusableFormField';
 
 // Services and Utilities
-import { forgotPassword, verifyPassword } from '@/service/auth.service';
+import { requestPasswordReset, verifyUserPassword } from '@/service/auth.service';
 import { toastError, toastSuccess } from '@/utils/toast-utils';
 import { useNavigate } from 'react-router';
 
@@ -32,7 +32,7 @@ export default function LoginWithPassword({
     const navigate = useNavigate();
 
     const loginWithPasswordMutation = useMutation({
-        mutationFn: verifyPassword,
+        mutationFn: verifyUserPassword,
         onSuccess: (res) => {
             window.localStorage.setItem('userData', JSON.stringify(res?.data?.userData));
             toastSuccess('Login Successful');
@@ -56,7 +56,7 @@ export default function LoginWithPassword({
     });
 
     const forgotPasswordMutation = useMutation({
-        mutationFn: forgotPassword,
+        mutationFn: requestPasswordReset,
         onSuccess: () => {
             toastSuccess(`Reset Password Link Send Successfully on ${loginId}`);
         },

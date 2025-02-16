@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader } from '../ui/card';
 import { Button } from '../ui/button';
 import { useNavigate, useSearchParams } from 'react-router';
 import PulsatingDots from '../ui/loaders/PulsatingDots';
-import { resetPassowrdTokenCheck, resetPassword } from '@/service/auth.service';
+import { validateResetToken , performPasswordReset } from '@/service/auth.service';
 import { toastError, toastSuccess } from '@/utils/toast-utils';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
@@ -58,9 +58,9 @@ export default function ResetPassword() {
     })
 
     const { data: verifyData, isLoading: isVerifyLoading, error: verifyError } = useQuery({
-        queryKey: ['resetPassowrdTokenCheck', token],
+        queryKey: ['validateResetToken ', token],
         queryFn: async () => {
-            const res = await resetPassowrdTokenCheck(token);
+            const res = await validateResetToken (token);
             return res.data;
         },
         retry: false,
@@ -68,7 +68,7 @@ export default function ResetPassword() {
     });
 
     const resetPasswordMutation = useMutation({
-        mutationFn: resetPassword,
+        mutationFn: performPasswordReset,
         onSuccess: () => {
             toastSuccess('Password reset successfully')
             form.reset(defaultValues);

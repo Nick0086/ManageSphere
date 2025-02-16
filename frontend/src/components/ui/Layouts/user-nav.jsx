@@ -20,7 +20,7 @@ import {
 import { toast } from 'react-toastify';
 import { Link, useNavigate } from 'react-router';
 import { useMutation } from '@tanstack/react-query';
-import { logOut } from '@/service/auth.service';
+import { logoutUser } from '@/service/auth.service';
 import { toastError, toastSuccess } from '@/utils/toast-utils';
 
 const getInitials = (name) => {
@@ -33,7 +33,7 @@ export function UserNav() {
 
 
   const logOutMutation = useMutation({
-    mutationFn: logOut,
+    mutationFn: logoutUser,
     onSuccess: (res) => {
       toastSuccess(res?.data?.message)
       window.localStorage.removeItem('userData')

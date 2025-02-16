@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import ReusableFormField from '@/common/Form/ReusableFormField';
-import { userVerified } from '@/service/auth.service';
+import { checkUserExists } from '@/service/auth.service';
 import { toastError } from '@/utils/toast-utils';
 import { Link } from 'react-router';
 
@@ -38,7 +38,7 @@ export default function LoginIdVerifier({ form, setIsLoginIdVerified }) {
     const loginType = form.watch('loginType');
 
     const loginIdVerificationMutation = useMutation({
-        mutationFn: userVerified,
+        mutationFn: checkUserExists,
         onSuccess: () => {
             setIsLoginIdVerified(true);
         },
