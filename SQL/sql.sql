@@ -47,3 +47,34 @@ CREATE TABLE password_reset_tokens (
     expires_at TIMESTAMP NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(unique_id)
 );
+
+-- ===== menu =====
+
+CREATE TABLE categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    unique_id CHAR(36) NOT NULL UNIQUE,  -- UUID as a unique identifier
+    user_id INT NOT NULL,  -- Each category belongs to a user (café)
+    name VARCHAR(255) NOT NULL,
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    position INT DEFAULT 0,  -- Drag-and-drop sorting
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(unique_id) ON DELETE CASCADE
+);
+
+CREATE TABLE menu_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    unique_id CHAR(36) NOT NULL UNIQUE,  -- UUID as a unique identifier
+    user_id INT NOT NULL,  -- Each item belongs to a user (café)
+    category_id INT,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    price DECIMAL(10,2) NOT NULL,
+    image_url VARCHAR(255),
+    availability ENUM('in_stock', 'out_of_stock') DEFAULT 'in_stock',
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    position INT DEFAULT 0,  -- Drag-and-drop sorting
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(unique_id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES categories(unique_id) ON DELETE SET NULL
+);
