@@ -20,17 +20,7 @@ const sideBarData = [
         icon: <ListTodo size={16} />,
         link: '/menu',
         isCollapsible: false,
-    },
-    {
-        title: 'QR Code',
-        link: '/qrcodes',
-        isCollapsible: false,
-    },
-    {
-        title: 'Bill Template',
-        link: '/billing',
-        isCollapsible: false,
-    },
+    }
 ]
 
 
