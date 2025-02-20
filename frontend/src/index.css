@@ -1,6 +1,37 @@
 @tailwind base;
+
+
+@font-face {
+  font-family: 'Geist Sans Variable';
+  src: url('assets/fonts/GeistVF.woff2') format('woff2'),
+    url('assets/fonts/GeistVF.woff') format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Geist Mono Variable';
+  src: url('assets/fonts/GeistMonoVF.woff2') format('woff2'),
+    url('assets/fonts/GeistMonoVF.woff') format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, 'Geist Sans Variable', 'Nunito', "Segoe UI", 'arial', 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
 @layer base {
   :root {
