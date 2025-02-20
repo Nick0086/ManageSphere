@@ -53,9 +53,9 @@ CREATE TABLE password_reset_tokens (
 CREATE TABLE categories (
     id INT AUTO_INCREMENT PRIMARY KEY,
     unique_id CHAR(36) NOT NULL UNIQUE,  -- UUID as a unique identifier
-    user_id INT NOT NULL,  -- Each category belongs to a user (café)
+    user_id CHAR(36) NOT NULL,  -- Should match the type of users.unique_id
     name VARCHAR(255) NOT NULL,
-    status ENUM('active', 'inactive') DEFAULT 'active',
+    status INT DEFAULT 1,
     position INT DEFAULT 0,  -- Drag-and-drop sorting
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(unique_id) ON DELETE CASCADE
@@ -64,17 +64,19 @@ CREATE TABLE categories (
 CREATE TABLE menu_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     unique_id CHAR(36) NOT NULL UNIQUE,  -- UUID as a unique identifier
-    user_id INT NOT NULL,  -- Each item belongs to a user (café)
-    category_id INT,
+    user_id CHAR(36) NOT NULL,  -- Each item belongs to a user (café)
+    category_id CHAR(36) NOT NULL,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     price DECIMAL(10,2) NOT NULL,
     image_url VARCHAR(255),
     availability ENUM('in_stock', 'out_of_stock') DEFAULT 'in_stock',
-    status ENUM('active', 'inactive') DEFAULT 'active',
+    status INT DEFAULT 1,
     position INT DEFAULT 0,  -- Drag-and-drop sorting
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(unique_id) ON DELETE CASCADE,
-    FOREIGN KEY (category_id) REFERENCES categories(unique_id) ON DELETE SET NULL
+    FOREIGN KEY (category_id) REFERENCES categories(unique_id) ON DELETE CASCADE
 );
+
+

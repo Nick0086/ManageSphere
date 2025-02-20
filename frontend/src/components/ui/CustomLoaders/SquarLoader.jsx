@@ -13,7 +13,7 @@ const SquareLoader = ({ bodyClassName, msg, msgClass }) => {
                 <span className="dot"></span>
 
             </div>
-            <div className={classnames(msgClass, 'mt-4 font-semibold text-lg')}> {msg}</div>
+            <div className={cn(msgClass, 'mt-4 font-semibold text-lg')}> {msg}</div>
         </div>
 
     );

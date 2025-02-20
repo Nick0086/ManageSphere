@@ -78,7 +78,7 @@ const ReusableFormField = ({
                 return (
                     <Select
                         onValueChange={(value) => {
-                            if (value || value === null) {
+                            if (value === 0 ||value || value === null) {
                                 field.onChange(value);
                                 onValueChange?.(value);
                             }
@@ -102,14 +102,14 @@ const ReusableFormField = ({
                                 ) : options.length > 10 ? (
                                     <ScrollArea className="h-72">
                                         {options.map((option) => (
-                                            <SelectItem key={option.value} value={option.value}>
+                                            <SelectItem key={option.value} value={`${option.value}`}>
                                                 {option.label}
                                             </SelectItem>
                                         ))}
                                     </ScrollArea>
                                 ) : (
                                     options.map((option) => (
-                                        <SelectItem key={option.value} value={option.value}>
+                                        <SelectItem key={option.value} value={`${option.value}`}>
                                             {option.label}
                                         </SelectItem>
                                     ))
@@ -271,7 +271,7 @@ const ReusableFormField = ({
             name={name}
             render={({ field }) => (
                 <FormItem className={cn("space-y-0", className)} {...formItemProps}>
-                    <div className={cn("w-full", containerClassName)}>
+                    <div className={cn("w-full space-y-1", containerClassName)}>
                         <FormLabel className={cn("text-sm text-secondary", labelClassName)} {...labelProps}>
                             {label}
                             {required && <sup className="text-status-danger text-sm -top-0">*</sup>}

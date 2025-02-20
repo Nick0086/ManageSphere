@@ -8,17 +8,18 @@ import Login from './components/Authentication/Login';
 import ResetPassword from './components/Authentication/ResetPassword';
 import Sidebar from './components/Sidebar/Sidebar';
 import Dashboard from './components/Dashboard/Dashboard';
-import TaskManagerIndex from './components/TaskManager/TaskManagerIndex';
+import MenuRoutes from './routes/MenuRoutes';
 
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
+
 
 function App() {
 
   const location = useLocation();
   const restriction = ['login', 'register-user', 'reset-password']
   const isLoginRoute = location.pathname === "/login" || location.pathname === "/register-user" || location.pathname === '/reset-password';
-  console.log({ isLoginRoute }, location.pathname)
+  // console.log({ isLoginRoute }, location.pathname)
 
   return (
     <>
@@ -30,7 +31,7 @@ function App() {
               <Route path='' element={<Sidebar />}>
                 <Route path='' element={<div>👋 Hyy</div>} />
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/todos" element={<TaskManagerIndex />} />
+                <Route path="/menu/*" element={<MenuRoutes />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
             </Route>

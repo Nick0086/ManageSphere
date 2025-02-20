@@ -3,10 +3,10 @@ import cors from 'cors'
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import { rateLimit } from 'express-rate-limit'
-import { v4 as uuid } from 'uuid';
 
 import userRoutes from './routes/user.routes.js'
 import authRoutes from './routes/auth.routes.js'
+import menuRoutes from './routes/menu.routes.js'
 
 const limiter = rateLimit({
     windowMs: 5 * 60 * 1000, // 5 minutes
@@ -19,8 +19,6 @@ app.use(cors({
     origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173', 'http://localhost:8080', 'http://localhost:5174',process.env.FRONTEND_DOMAIN],
     credentials: true
 }))
-
-console.log("Hiiii")
 
 app.use(express.json())
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -41,6 +39,9 @@ app.use('/v1/user', userRoutes);
 
 // auth api
 app.use('/v1/auth', authRoutes);
+
+// menu api
+app.use('/v1/menu', menuRoutes);
 
 const PORT = process.env.PORT || 3002;
 
