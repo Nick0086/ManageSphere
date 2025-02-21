@@ -158,7 +158,8 @@ export default function CategoriesIndex() {
       />
 
       <div className="w-full" >
-        <div className=" px-2 my-2 flex justify-end items-center">
+        <div className=" px-2 my-2 flex justify-between items-center">
+          <h2 className='text-2xl font-medium' >Menu Categories</h2>
           <div className="flex items-center gap-2">
             <Button onClick={() => handleOpenModal({ isOpen: true, isEdit: false, data: null })} size='sm' className='text-indigo-500 gap-2 border bg-white hover:text-white border-indigo-500 hover:bg-indigo-500'>
               <div className='flex items-center gap-1 '>

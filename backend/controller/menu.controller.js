@@ -54,35 +54,65 @@ export const getAllCategory = async (req, res) => {
     }
 };
 
+
 export const addCategory = async (req, res) => {
     try {
         const { unique_id: userId } = req.user;
-        const categoryId = createUniqueId('CAT');
         const { name } = req.body;
+        
 
-        // Check if category with the same name already exists
-        const [categoryExists] = await query('SELECT COUNT(*) AS total FROM categories WHERE user_id = ? AND name = ?', [userId, name]);
-
-        if (categoryExists?.total > 0) {
-            return res.status(400).json({ code: 'CATEGORY_EXISTS', message: `Category ${name} already exists.` });
+        // Validate category name
+        if (!name || typeof name !== 'string' || name.trim() === '' || name.length > 255) {
+            return res.status(400).json({
+                status: "error",
+                code: "INVALID_NAME",
+                message: "Category name must be a non-empty string and less than 255 characters"
+            });
         }
 
-        // Get the total number of categories for this user to set the position
-        const [categoryCountResult] = await query('SELECT COUNT(*) AS total FROM categories WHERE user_id = ?', [userId]);
-        const totalCategories = categoryCountResult?.total || 0;
+        // Check for duplicate category name
+        const [categoryExists] = await query(
+            'SELECT COUNT(*) AS total FROM categories WHERE user_id = ? AND name = ?',
+            [userId, name.trim()]
+        );
+        if (categoryExists?.total > 0) {
+            return res.status(400).json({
+                status: "error",
+                code: "CATEGORY_EXISTS",
+                message: `Category ${name} already exists`
+            });
+        }
+
+        // Calculate the next position
+        const [categoryCountResult] = await query(
+            'SELECT COUNT(*) AS total FROM categories WHERE user_id = ?',
+            [userId]
+        );
+        const position = (categoryCountResult?.total || 0) + 1;
+        const categoryId = createUniqueId('CAT');
 
         // Insert new category
-        const insertQuery = `INSERT INTO categories (unique_id, user_id, name, status, position) VALUES (?, ?, ?, ?, ?)`;
-        const values = [categoryId, userId, name, 1, parseInt(totalCategories || 0) + 1];
+        const insertQuery = `
+            INSERT INTO categories (unique_id, user_id, name, status, position)
+            VALUES (?, ?, ?, ?, ?)
+        `;
+        const values = [categoryId, userId, name.trim(), 1, position];
         const result = await query(insertQuery, values);
 
         if (result?.affectedRows > 0) {
-            return res.status(201).json({ code: 'CATEGORY_ADDED', message: `Category ${name} added successfully.` });
-        } else {
-            return res.status(500).json({ code: 'CATEGORY_ADD_FAILED', message: `Failed to add category ${name}.` });
+            return res.status(201).json({
+                status: "success",
+                message: `Category ${name} added successfully`,
+                data: { categoryId }
+            });
         }
+        return res.status(500).json({
+            status: "error",
+            code: "CATEGORY_ADD_FAILED",
+            message: `Failed to add category ${name}`
+        });
     } catch (error) {
-        handleError('menu.controller.js', 'addCategory', res, error, 'An unexpected error occurred while adding the category.');
+        handleError('menu.controller.js', 'addCategory', res, error, 'An unexpected error occurred while adding the category');
     }
 };
 
@@ -92,26 +122,62 @@ export const updateCategory = async (req, res) => {
         const { name, status } = req.body;
         const { categoryId } = req.params;
 
-        // Check if another category with the same name exists
-        const [categoryCheck] = await query('SELECT COUNT(*) AS total FROM categories WHERE user_id = ? AND name = ? AND unique_id != ?', [userId, name, categoryId]);
+        // Validate inputs
+        if (!name || typeof name !== 'string' || name.trim() === '' || name.length > 255) {
+            return res.status(400).json({
+                status: "error",
+                code: "INVALID_NAME",
+                message: "Category name must be a non-empty string and less than 255 characters"
+            });
+        }
+        if (typeof status !== 'number' || ![0, 1].includes(status)) {
+            return res.status(400).json({
+                status: "error",
+                code: "INVALID_STATUS",
+                message: "Status must be 0 or 1"
+            });
+        }
 
+        // Check if the category exists
+        const [category] = await query(
+            'SELECT 1 FROM categories WHERE user_id = ? AND unique_id = ?',
+            [userId, categoryId]
+        );
+        if (!category) {
+            return res.status(404).json({
+                status: "error",
+                code: "CATEGORY_NOT_FOUND",
+                message: "Category not found"
+            });
+        }
+
+        // Check for duplicate category name (excluding current category)
+        const [categoryCheck] = await query(
+            'SELECT COUNT(*) AS total FROM categories WHERE user_id = ? AND name = ? AND unique_id != ?',
+            [userId, name.trim(), categoryId]
+        );
         if (categoryCheck?.total > 0) {
-            return res.status(400).json({ code: 'CATEGORY_EXISTS', message: `Category ${name} already exists.` });
+            return res.status(400).json({
+                status: "error",
+                code: "CATEGORY_EXISTS",
+                message: `Another category with name ${name} already exists`
+            });
         }
 
-        const updateQuery = `UPDATE categories SET name = ?, status = ? WHERE user_id = ? AND unique_id = ?`;
-        const values = [name, status, userId, categoryId];
-        const result = await query(updateQuery, values);
+        // Update the category
+        const updateQuery = `
+            UPDATE categories
+            SET name = ?, status = ?
+            WHERE user_id = ? AND unique_id = ?
+        `;
+        await query(updateQuery, [name.trim(), status, userId, categoryId]);
 
-        if (result?.affectedRows > 0) {
-            return res.status(200).json({ code: 'CATEGORY_UPDATED', message: `Category ${name} updated successfully.` });
-        } else {
-            return res.status(400).json({ code: 'CATEGORY_UPDATE_FAILED', message: `No changes made or category not found.` });
-        }
+        return res.status(200).json({
+            status: "success",
+            message: "Category updated successfully"
+        });
     } catch (error) {
-        handleError('menu.controller.js', 'updateCategory', res, error, 'An unexpected error occurred while updating the category.');
+        handleError('menu.controller.js', 'updateCategory', res, error, 'An unexpected error occurred while updating the category');
     }
 };
-
-
 

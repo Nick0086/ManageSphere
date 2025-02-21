@@ -51,7 +51,7 @@ export default function CategoriesForm({ open, onHide, isEdit, selectedRow }) {
             handleModalClose();
         },
         onError: (error) => {
-            toastError(`Error adding Lead Source: ${error?.err?.message}`);
+            toastError(`Error adding Category: ${error?.err?.message}`);
         }
     });
 
@@ -63,7 +63,7 @@ export default function CategoriesForm({ open, onHide, isEdit, selectedRow }) {
             handleModalClose();
         },
         onError: (error) => {
-            toastError(`Error updating Lead Source: ${error?.err?.message}`);
+            toastError(`Error updating Category: ${error?.err?.message}`);
         }
     });
 
