@@ -31,7 +31,7 @@ function App() {
               <Route path='' element={<Sidebar />}>
                 <Route path='' element={<div>👋 Hyy</div>} />
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/menu/*" element={<MenuRoutes />} />
+                <Route path="/menu-management/*" element={<MenuRoutes />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
             </Route>

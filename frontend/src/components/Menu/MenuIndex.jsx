@@ -16,7 +16,7 @@ export default function MenuIndex() {
 
     const handleTabChange = (tab) => {
         setSelectedTab(tab);
-        navigate(`/menu/${tab}`);
+        navigate(`/menu-management/${tab}`);
     }
 
     return (
@@ -28,7 +28,7 @@ export default function MenuIndex() {
                             <Tabs value={selectedTab} className='border-none w-full' onValueChange={handleTabChange}>
                                 <TabsList className="flex flex-wrap w-full border-b border-gray-300">
                                     <TabsTrigger value="dashboard" variant="team" className="text-blue-500 border-blue-500 data-[state=active]:bg-blue-200 data-[state=active]:text-blue-700">
-                                        Dashboard
+                                        Templates
                                     </TabsTrigger>
                                     <TabsTrigger value="categories" variant="team" className="text-red-500 border-red-500 data-[state=active]:bg-red-200 data-[state=active]:text-red-700">
                                         Categories

@@ -147,7 +147,7 @@ export default function CategoriesIndex() {
         isOpen={selectedRow !== null}
         onClose={handleClose}
         data={selectedRow || {}}
-        title="Lead Source Details"
+        title="Category Details"
       />
 
       <CategoriesForm

@@ -18,7 +18,7 @@ const sideBarData = [
     {
         title: 'Menu ',
         icon: <ListTodo size={16} />,
-        link: '/menu',
+        link: '/menu-management',
         isCollapsible: false,
     }
 ]

@@ -14,7 +14,7 @@ export default function MenuRoutes() {
                 <Route path="dashboard" element={<TabsContent value="dashboard"><DashBoardIndex/></TabsContent>} />
                 <Route path="categories" element={<TabsContent value="categories"><CategoriesIndex/></TabsContent>} />
                 <Route path="menu-items" element={<TabsContent value="menu-items"><MenuItemsIndex/></TabsContent>} />
-                <Route path="*" element={<Navigate to="/menu/dashboard" replace />} />
+                <Route path="*" element={<Navigate to="/menu-management/dashboard" replace />} />
             </Route>
         </Routes>
     )
