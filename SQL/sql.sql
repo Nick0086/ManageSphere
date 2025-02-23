@@ -61,7 +61,7 @@ CREATE TABLE categories (
     FOREIGN KEY (user_id) REFERENCES users(unique_id) ON DELETE CASCADE
 );
 
-CREATE TABLE menu_items (
+    CREATE TABLE menu_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     unique_id CHAR(36) NOT NULL UNIQUE,  -- UUID as a unique identifier
     user_id CHAR(36) NOT NULL,  -- Each item belongs to a user (café)
@@ -69,7 +69,7 @@ CREATE TABLE menu_items (
     name VARCHAR(255) NOT NULL,
     description TEXT,
     price DECIMAL(10,2) NOT NULL,
-    image_url VARCHAR(255),
+    image_deatils JSON,
     availability ENUM('in_stock', 'out_of_stock') DEFAULT 'in_stock',
     status INT DEFAULT 1,
     position INT DEFAULT 0,  -- Drag-and-drop sorting
