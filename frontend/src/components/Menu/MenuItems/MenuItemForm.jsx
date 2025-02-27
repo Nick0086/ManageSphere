@@ -232,7 +232,7 @@ const MenuItemForm = memo(({ open, onHide, isEdit, selectedRow }) => {
                                         <div className="col-span-12  ">
                                             <label className="block text-sm font-medium mb-2">Cover Image</label>
                                             <ImageAvatar
-                                                s3ImageUrl={selectedRow?.cover_image || ''} // Original S3 URL
+                                                s3ImageUrl={selectedRow.image_details?.url || ''} // Original S3 URL
                                                 onImageUpload={handleImageUpload} // Handle image upload
                                                 onDeleteImage={handleDeleteImage} // Handle image deletion
                                             />

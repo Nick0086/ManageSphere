@@ -1,7 +1,8 @@
 import { createUniqueId, handleError } from "../utils/utils.js";
 import query from "../utils/query.utils.js";
 import multer from "multer";
-import { deleteResourceFromCloudinary, uploadStreamToCloudinary, uploadToCloudinary } from "../services/cloudinary/cloudinary.service.js";
+import { deleteResourceFromCloudinary, uploadStreamToCloudinary } from "../services/cloudinary/cloudinary.service.js";
+import sharp from 'sharp';
 
 const upload = multer({
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
@@ -207,7 +208,7 @@ export const updateCategory = async (req, res) => {
 
 
 // Enhanced input validation with more specific checks
-const validateMenuItemInput = ({ name, price,availability }, res) => {
+const validateMenuItemInput = ({ name, price, availability }, res) => {
     if (!name || typeof name !== 'string' || name.trim() === '' || name.length > 255) {
         return res.status(400).json({
             status: "error",
@@ -273,15 +274,52 @@ const handleImageUpload = async (file, userId, menuItemId) => {
     const { originalname, buffer, mimetype } = file;
     const fileName = `${menuItemId}_${Date.now()}_${originalname}`
     const key = `menuItem/${userId}`; // Added timestamp to prevent overwrite conflicts
+    // Check file size (buffer.length is in bytes, 1MB = 1048576 bytes)
+    let processedBuffer = buffer;
+
+    // Compress images larger than 1MB
+    if (buffer.length > 1048576) {
+        try {
+
+            // Process image with Sharp - works reliably on servers
+            processedBuffer = await sharp(buffer)
+                // Convert to JPEG with compression
+                .jpeg({
+                    quality: 25,
+                    mozjpeg: true
+                })
+                .toBuffer();
+
+            console.log(`Original size: ${buffer.length / 1024} KB`);
+            console.log(`Compressed size: ${processedBuffer.length / 1024} KB`);
+
+            // If compression didn't reduce size enough, try more aggressive settings
+            // if (processedBuffer.length > 300 * 1024) {
+            //     processedBuffer = await sharp(buffer)
+            //         .jpeg({
+            //             quality: 30,
+            //             mozjpeg: true
+            //         })
+            //         .toBuffer();
+            //     console.log(`Further compressed size: ${processedBuffer.length / 1024} KB`);
+            // }
+        } catch (err) {
+            console.error("Error compressing image:", err);
+            // Fall back to original buffer if compression fails
+            processedBuffer = buffer;
+        }
+    }
+
+    // Set compression options based on file size
     const options = {
         folder: key,
         public_id: fileName,
         resource_type: 'auto',
-        overwrite: false // Prevent accidental overwrites
+        overwrite: false
     };
 
     try {
-        const fileUploadResult = await uploadStreamToCloudinary(buffer, options);
+        const fileUploadResult = await uploadStreamToCloudinary(processedBuffer, options);
         if (!fileUploadResult?.secure_url) {
             throw new Error('Upload succeeded but no secure URL returned');
         }
@@ -427,7 +465,7 @@ export const updateMenuItem = async (req, res) => {
                 resolve();
             });
         });
-        
+
         const { unique_id: userId } = req.user;
         const { category_id, name, description, price, availability, status } = req.body;
         const { menuItemId } = req.params;
@@ -470,7 +508,7 @@ export const updateMenuItem = async (req, res) => {
             });
         }
 
-        
+
 
         // Handle image
         let coverImageDetails = existingMenuItem.image_details ? existingMenuItem.image_details : null;

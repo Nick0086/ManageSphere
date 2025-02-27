@@ -17,6 +17,7 @@ const ImageAvatar = ({ s3ImageUrl, onImageUpload, onDeleteImage }) => {
 
     // Handle image upload
     const handleImageUpload = (e) => {
+        console.log(e);
         const file = e.target.files[0];
         const maxSize = 5 * 1024 * 1024; // 5 MB
 
@@ -30,7 +31,7 @@ const ImageAvatar = ({ s3ImageUrl, onImageUpload, onDeleteImage }) => {
                 onImageUpload(file);
             };
             reader.readAsDataURL(file);
-        } else {
+        } else if (file) {
             toast.warning("Please upload an image less than 5 MB.");
         }
     };
@@ -85,10 +86,23 @@ const ImageAvatar = ({ s3ImageUrl, onImageUpload, onDeleteImage }) => {
         });
     };
 
-
     // Trigger file input
     const triggerFileInput = () => {
         fileInputRef.current.click();
+    };
+
+       // Handle image deletion
+       const handleDeleteImage = (e) => {
+        e.stopPropagation();
+        // Reset the file input
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+        setUploadedImage(null);
+        setZoomLevel(1);
+        setPosition({ x: 0, y: 0 });
+        setIsDraggingEnabled(false);
+        onDeleteImage();
     };
 
     // Start dragging
@@ -268,14 +282,8 @@ const ImageAvatar = ({ s3ImageUrl, onImageUpload, onDeleteImage }) => {
                             type="button"
                             variant="danger"
                             size="xs"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setUploadedImage(null);
-                                setZoomLevel(1);
-                                setPosition({ x: 0, y: 0 });
-                                setIsDraggingEnabled(false);
-                                onDeleteImage();
-                            }}
+                            onClick={handleDeleteImage}
+
                         >
                             <Trash2 size={12} />
                         </Button>
