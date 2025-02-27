@@ -28,3 +28,38 @@ export const updateCategory = async (data) => {
     }
 }
 
+export const getAllMenuItems = async () => {
+    try {
+        const response = await api.get('/menu/menu-items');
+        return { success: true, data: response.data };
+    } catch (error) {
+        throw handleApiError(error);
+    }
+}
+
+export const createMenuItem = async (data) => {
+    try {
+        const response = await api.post('/menu/menu-items', data, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+        return { success: true, data: response.data };
+    } catch (error) {
+        throw handleApiError(error);
+    }
+}
+
+export const updateMenuItem = async (data) => {
+    try {
+        console.log(data)
+        const response = await api.put(`/menu/menu-items/${data?.menuItemId}`, data?.menuData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+        return { success: true, data: response.data };
+    } catch (error) {
+        throw handleApiError(error);
+    }
+}

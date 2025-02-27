@@ -17,7 +17,7 @@ import CommonTableToolbar from './components/CommonTableToolbar';
 const columnsMapping = {
   id: "Unique No",
   name: "Category",
-  count: "Count",
+  menu_item_count: "Count",
   status: "Status",
   actions: "Actions",
 };
@@ -71,7 +71,7 @@ export default function CategoriesIndex() {
     },
     {
       header: "Count",
-      accessorKey: "count",
+      accessorKey: "menu_item_count",
       HeaderClassName:"text-center",
       colClassName:"w-2/12 text-center",
     },

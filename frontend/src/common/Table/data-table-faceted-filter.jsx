@@ -8,7 +8,7 @@ import {  Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Comman
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
-export function DataTableFacetedFilter({ column, title, options }) {
+export function DataTableFacetedFilter({ column, title, options, fixLength = 2 }) {
     const facets = column?.getFacetedUniqueValues()
     const selectedValues = new Set(column?.getFilterValue())
 
@@ -34,7 +34,7 @@ export function DataTableFacetedFilter({ column, title, options }) {
                                 {selectedValues.size}
                             </Badge>
                             <div className="hidden space-x-1 lg:flex">
-                                {selectedValues.size > 2 ? (
+                                {selectedValues.size > fixLength ? (
                                     <Badge
                                         variant="secondary"
                                         className="rounded-sm px-1 font-normal"
@@ -109,8 +109,8 @@ export function DataTableFacetedFilter({ column, title, options }) {
                         </CommandGroup>
                         {selectedValues.size > 0 && (
                             <>
-                                <CommandSeparator />
-                                <CommandGroup>
+                                {/* <CommandSeparator /> */}
+                                <CommandGroup className='sticky bottom-0 w-full bg-white border-t' >
                                     <CommandItem
                                         onSelect={() => column?.setFilterValue(undefined)}
                                         className="justify-center text-center"

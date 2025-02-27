@@ -41,7 +41,8 @@ const ReusableFormField = ({
     decryptAESFunction = {},
     radioLabelClassName,
     radioGroupBodyClassName,
-    coustomValue
+    coustomValue,
+    textAreaClassName=''
 }) => {
 
     const [showPassword, setShowPassword] = useState(false);
@@ -150,7 +151,7 @@ const ReusableFormField = ({
                     />
                 );
             case 'textarea':
-                return <Textarea {...commonProps} />;
+                return <Textarea className={cn("", textAreaClassName)}  {...commonProps} />;
             case 'checkbox':
                 return (
                     <Checkbox

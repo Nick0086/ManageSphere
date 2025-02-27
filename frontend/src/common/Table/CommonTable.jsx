@@ -34,17 +34,16 @@ export default function CommonTable({
                                         header.column.columnDef.HeaderClassName
                                     )}
                                     colSpan={header.colSpan}
-                                    onClick={header.column.getToggleSortingHandler()}
+                                    onClick={header?.column?.columnDef?.isSort ? header.column.getToggleSortingHandler() : () => console.log("Not Allowed")}
                                     data-tooltip-id={header.column.columnDef.headerTooltipText ? `tooltip-${header.id}` : undefined}
                                     data-tooltip-content={header.column.columnDef.headerTooltipText}
                                     data-tooltip-place={header.column.columnDef.headerTooltipPlacement ?? tooltipPlacement}
-
                                 >
-                                    {header.isPlaceholder ? null : (
+                                    {header?.isPlaceholder ? null : (
                                         <div>
                                             {flexRender(header.column.columnDef.header, header.getContext())}
-                                            {header.column.getIsSorted() ? (
-                                                header.column.getIsSorted() === 'asc' ? '▲' : '▼'
+                                            {(header?.column?.columnDef?.isSort && header?.column?.getIsSorted() )? (
+                                                header?.column?.getIsSorted() === 'asc' ? '▲' : '▼'
                                             ) : null}
                                         </div>
                                     )}

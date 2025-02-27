@@ -69,6 +69,7 @@ export const getUrlFromCloudinary = (publicId, options = {}) => {
  */
 export const deleteResourceFromCloudinary = async (publicId, resourceType = 'image') => {
     try {
+        console.log(publicId)
         const response = await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
         console.log('deleteResourceFromCloudinary response:', response);
         return response?.result === 'not found' ? false : response;

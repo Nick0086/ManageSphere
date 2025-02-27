@@ -12,6 +12,7 @@ import MenuRoutes from './routes/MenuRoutes';
 
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
+import 'react-image-crop/dist/ReactCrop.css';
 
 
 function App() {

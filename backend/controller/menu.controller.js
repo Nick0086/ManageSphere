@@ -1,7 +1,7 @@
 import { createUniqueId, handleError } from "../utils/utils.js";
 import query from "../utils/query.utils.js";
 import multer from "multer";
-import { deleteResourceFromCloudinary, uploadToCloudinary } from "../services/cloudinary/cloudinary.service.js";
+import { deleteResourceFromCloudinary, uploadStreamToCloudinary, uploadToCloudinary } from "../services/cloudinary/cloudinary.service.js";
 
 const upload = multer({
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
@@ -34,7 +34,7 @@ const upload = multer({
     name VARCHAR(255) NOT NULL,
     description TEXT,
     price DECIMAL(10,2) NOT NULL,
-    image_deatils JSON,
+    image_details JSON,
     availability ENUM('in_stock', 'out_of_stock') DEFAULT 'in_stock',
     status INT DEFAULT 1,
     position INT DEFAULT 0,  -- Drag-and-drop sorting
@@ -207,7 +207,7 @@ export const updateCategory = async (req, res) => {
 
 
 // Enhanced input validation with more specific checks
-const validateMenuItemInput = ({ name, price }, res) => {
+const validateMenuItemInput = ({ name, price,availability }, res) => {
     if (!name || typeof name !== 'string' || name.trim() === '' || name.length > 255) {
         return res.status(400).json({
             status: "error",
@@ -271,22 +271,24 @@ const handleImageUpload = async (file, userId, menuItemId) => {
     if (!file) return null;
 
     const { originalname, buffer, mimetype } = file;
-    const key = `menuItem/${userId}/${menuItemId}_${Date.now()}_${originalname}`; // Added timestamp to prevent overwrite conflicts
+    const fileName = `${menuItemId}_${Date.now()}_${originalname}`
+    const key = `menuItem/${userId}`; // Added timestamp to prevent overwrite conflicts
     const options = {
         folder: key,
-        public_id: originalname,
+        public_id: fileName,
         resource_type: 'auto',
         overwrite: false // Prevent accidental overwrites
     };
 
     try {
-        const fileUploadResult = await uploadToCloudinary(buffer, options);
+        const fileUploadResult = await uploadStreamToCloudinary(buffer, options);
         if (!fileUploadResult?.secure_url) {
             throw new Error('Upload succeeded but no secure URL returned');
         }
 
         return {
             fileName: originalname,
+            public_id: fileName,
             fileMimeType: mimetype,
             path: key,
             url: fileUploadResult.secure_url
@@ -323,6 +325,7 @@ export const getAllMenuItems = async (req, res) => {
         handleError('menu.controller.js', 'getAllMenuItems', res, error, 'An unexpected error occurred while fetching menu items.');
     }
 };
+
 export const addMenuItem = async (req, res) => {
     try {
         // Middleware to handle file upload
@@ -344,7 +347,7 @@ export const addMenuItem = async (req, res) => {
         const { category_id, name, description, price, availability } = req.body;
 
         // Validate inputs
-        const validationError = validateMenuItemInput({ name, price }, res);
+        const validationError = validateMenuItemInput({ name, price, availability }, res);
         if (validationError) return;
 
         const trimmedName = name.trim();
@@ -424,12 +427,13 @@ export const updateMenuItem = async (req, res) => {
                 resolve();
             });
         });
+        
         const { unique_id: userId } = req.user;
         const { category_id, name, description, price, availability, status } = req.body;
         const { menuItemId } = req.params;
 
         // Validate inputs
-        const validationError = validateMenuItemInput({ name, price }, res);
+        const validationError = validateMenuItemInput({ name, price, availability }, res);
         if (validationError) return;
 
         const trimmedName = name.trim();
@@ -466,11 +470,13 @@ export const updateMenuItem = async (req, res) => {
             });
         }
 
+        
+
         // Handle image
-        let coverImageDetails = existingMenuItem.image_details ? JSON.parse(existingMenuItem.image_details) : null;
+        let coverImageDetails = existingMenuItem.image_details ? existingMenuItem.image_details : null;
         if (req.file) {
             if (coverImageDetails?.path) {
-                await deleteResourceFromCloudinary(coverImageDetails.path);
+                await deleteResourceFromCloudinary(`${coverImageDetails.path}/${coverImageDetails.public_id}`);
             }
             coverImageDetails = await handleImageUpload(req.file, userId, menuItemId);
             if (!coverImageDetails) {

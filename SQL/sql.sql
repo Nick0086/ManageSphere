@@ -69,7 +69,7 @@ CREATE TABLE categories (
     name VARCHAR(255) NOT NULL,
     description TEXT,
     price DECIMAL(10,2) NOT NULL,
-    image_deatils JSON,
+    image_details JSON,
     availability ENUM('in_stock', 'out_of_stock') DEFAULT 'in_stock',
     status INT DEFAULT 1,
     position INT DEFAULT 0,  -- Drag-and-drop sorting
