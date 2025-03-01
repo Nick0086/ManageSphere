@@ -13,6 +13,7 @@ import { Info, Pencil } from 'lucide-react';
 import RowDetailsModal from '@/common/Modal/RowDetailsModal';
 import CommonTableToolbar from './components/CommonTableToolbar';
 import { queryKeyLoopUp } from '../Categories/utils';
+import { DataTablePagination } from '@/components/ui/table-pagination';
 
 const columnsMapping = {
   id: "Sr No",
@@ -95,14 +96,14 @@ export default function MenuTable({
       filterFn: (row, id, filterValue) => {
         // If no filter value, return all rows
         if (!filterValue) return true;
-        
+
         try {
           // Parse the stringified filter value
           const { value, operator } = JSON.parse(filterValue);
           const rowValue = parseFloat(row.getValue(id));
-          
+
           // Apply the appropriate comparison
-          switch(operator) {
+          switch (operator) {
             case "lessThan":
               return rowValue < value;
             case "greaterThan":
@@ -226,7 +227,10 @@ export default function MenuTable({
         />
       </div>
       <div className=' py-2'>
-        <CommonTable table={tableInstance} />
+        <CommonTable table={tableInstance}  />
+      </div>
+      <div className="mt-2 pt-2 border-t">
+        <DataTablePagination table={tableInstance} count={data?.data?.menuItems?.length || 0} />
       </div>
     </>
 

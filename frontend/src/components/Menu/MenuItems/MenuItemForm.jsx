@@ -58,6 +58,7 @@ const MenuItemForm = memo(({ open, onHide, isEdit, selectedRow }) => {
                 status: selectedRow.status?.toString() || '1',
             });
         } else {
+            setImageWarning(true)
             form.reset(defaultValues);
         }
     }, [isEdit, selectedRow, form]);
@@ -232,7 +233,7 @@ const MenuItemForm = memo(({ open, onHide, isEdit, selectedRow }) => {
                                         <div className="col-span-12  ">
                                             <label className="block text-sm font-medium mb-2">Cover Image</label>
                                             <ImageAvatar
-                                                s3ImageUrl={selectedRow.image_details?.url || ''} // Original S3 URL
+                                                s3ImageUrl={selectedRow?.image_details?.url || ''} // Original S3 URL
                                                 onImageUpload={handleImageUpload} // Handle image upload
                                                 onDeleteImage={handleDeleteImage} // Handle image deletion
                                             />

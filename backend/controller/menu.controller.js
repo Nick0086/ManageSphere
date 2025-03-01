@@ -278,20 +278,30 @@ const handleImageUpload = async (file, userId, menuItemId) => {
     let processedBuffer = buffer;
 
     // Compress images larger than 1MB
-    if (buffer.length > 1048576) {
+    if (buffer.length > 500 * 1024) {
         try {
 
             // Process image with Sharp - works reliably on servers
             processedBuffer = await sharp(buffer)
                 // Convert to JPEG with compression
                 .jpeg({
-                    quality: 25,
+                    quality: 20,
                     mozjpeg: true
                 })
                 .toBuffer();
 
             console.log(`Original size: ${buffer.length / 1024} KB`);
             console.log(`Compressed size: ${processedBuffer.length / 1024} KB`);
+
+            if (processedBuffer.length > 250 * 1024) {
+                processedBuffer = await sharp(processedBuffer)
+                    .jpeg({
+                        quality: 10,
+                        mozjpeg: true
+                    })
+                    .toBuffer();
+                console.log(`Further compressed size: ${(processedBuffer.length / 1024).toFixed(2)} KB`);
+            }
 
             // If compression didn't reduce size enough, try more aggressive settings
             // if (processedBuffer.length > 300 * 1024) {
