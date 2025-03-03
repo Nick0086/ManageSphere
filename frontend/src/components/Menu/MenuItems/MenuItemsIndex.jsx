@@ -2,10 +2,15 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { LayoutGrid, List, Plus } from 'lucide-react'
-import React, { useCallback, useState, memo } from 'react'
+import React, { useCallback, useState, memo, useEffect, useMemo } from 'react'
 import MenuCard from './MenuCard'
 import MenuTable from './MenuTable'
 import MenuItemForm from './MenuItemForm'
+import { useQuery } from '@tanstack/react-query'
+import { menuQueryKeyLoopUp } from './utils'
+import { getAllCategory, getAllMenuItems } from '@/service/menu.service'
+import { queryKeyLoopUp } from '../Categories/utils'
+import { toastError } from '@/utils/toast-utils'
 
 // Memoize the header component to prevent unnecessary re-renders
 const Header = memo(({ onAddClick }) => (
@@ -41,20 +46,51 @@ const MemoizedMenuTable = memo(MenuTable);
 const MemoizedMenuCard = memo(MenuCard);
 
 export default function MenuItemsIndex() {
-  const [isModalOpen, setIsModalOpen] = useState({ isOpen: false, isEdit: false, data: null });
+  const [isModalOpen, setIsModalOpen] = useState({ isOpen: false, isEdit: false, data: null, isDireact : false });
   const [activeTab, setActiveTab] = useState("table-view");
 
   const handleModalClose = useCallback(() => {
-    setIsModalOpen((prv) => ({ ...prv, isOpen: false, isEdit: false, data: null }));
+    setIsModalOpen((prv) => ({ ...prv, isOpen: false, isEdit: false, data: null , isDireact : false}));
   }, []);
 
   const handleAddMenuItem = useCallback(() => {
-    setIsModalOpen((prv) => ({ ...prv, isOpen: true, isEdit: false, data: null }));
+    setIsModalOpen((prv) => ({ ...prv, isOpen: true, isEdit: false, data: null , isDireact : false}));
   }, []);
 
   const handleTabChange = useCallback((value) => {
     setActiveTab(value);
   }, []);
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: [menuQueryKeyLoopUp['item']],
+    queryFn: getAllMenuItems,
+  });
+
+  // Fetch categories
+  const { data: categoryData, isLoading: categoryIsLoading, error: categoryError } = useQuery({
+    queryKey: [queryKeyLoopUp['Category']],
+    queryFn: getAllCategory,
+  });
+
+  useEffect(() => {
+    if (error) {
+      toastError(`Error fetching Menu Item: ${JSON.stringify(error)}`);
+    }
+    if (categoryError) {
+      toastError(`Error fetching categories: ${JSON.stringify(categoryError)}`);
+    }
+  }, [error, categoryError]);
+
+    const categoryOptions = useMemo(() => {
+      if (categoryData) {
+        const categories = categoryData?.data?.categories || [];
+        return categories.map((category) => ({
+          value: category?.name,
+          label: category?.name,
+        }));
+      }
+      return [];
+    }, [categoryData]);
 
   return (
     <div className="w-full">
@@ -63,6 +99,7 @@ export default function MenuItemsIndex() {
         isEdit={isModalOpen?.isEdit}
         selectedRow={isModalOpen?.data}
         onHide={handleModalClose}
+        isDireact={isModalOpen?.isDireact}
       />
 
       <Tabs
@@ -75,13 +112,13 @@ export default function MenuItemsIndex() {
         {/* Render content conditionally based on active tab */}
         {activeTab === "table-view" && (
           <TabsContent value="table-view" forceMount>
-            <MemoizedMenuTable setIsModalOpen={setIsModalOpen} />
+            <MemoizedMenuTable data={data} isLoading={isLoading} categoryOptions={categoryOptions} setIsModalOpen={setIsModalOpen} categoryIsLoading={categoryIsLoading}/>
           </TabsContent>
         )}
 
         {activeTab === "card-view" && (
           <TabsContent value="card-view" forceMount className="px-2">
-            <MemoizedMenuCard />
+            <MemoizedMenuCard data={data} isLoading={isLoading} categoryOptions={categoryOptions} setIsModalOpen={setIsModalOpen} categoryIsLoading={categoryIsLoading}/>
           </TabsContent>
         )}
       </Tabs>

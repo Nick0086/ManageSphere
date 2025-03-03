@@ -325,7 +325,8 @@ const handleImageUpload = async (file, userId, menuItemId) => {
         folder: key,
         public_id: fileName,
         resource_type: 'auto',
-        overwrite: false
+        overwrite: false,
+        format: 'webp',
     };
 
     try {
@@ -337,7 +338,7 @@ const handleImageUpload = async (file, userId, menuItemId) => {
         return {
             fileName: originalname,
             public_id: fileName,
-            fileMimeType: mimetype,
+            fileMimeType: 'image/webp',
             path: key,
             url: fileUploadResult.secure_url
         };

@@ -1,18 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { getCoreRowModel, getFacetedRowModel, getFacetedUniqueValues, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
 import { Chip } from '@/components/ui/chip';
 import CommonTable from '@/common/Table/CommonTable';
-import { useQuery } from '@tanstack/react-query';
-import { menuQueryKeyLoopUp } from './utils';
-import { getAllCategory, getAllMenuItems } from '@/service/menu.service';
 import SquareLoader from '@/components/ui/CustomLoaders/SquarLoader';
 import { Card } from '@/components/ui/card';
-import { toastError } from '@/utils/toast-utils';
 import { Button } from '@/components/ui/button';
 import { Info, Pencil } from 'lucide-react';
 import RowDetailsModal from '@/common/Modal/RowDetailsModal';
 import CommonTableToolbar from './components/CommonTableToolbar';
-import { queryKeyLoopUp } from '../Categories/utils';
 import { DataTablePagination } from '@/components/ui/table-pagination';
 
 const columnsMapping = {
@@ -27,44 +22,17 @@ const columnsMapping = {
 
 
 export default function MenuTable({
-  setIsModalOpen
+  setIsModalOpen,
+  data,
+  isLoading,
+  categoryOptions,
+  categoryIsLoading
 }) {
 
   const [sorting, setSorting] = useState([])
   const [columnFilters, setColumnFilters] = useState([{ id: "status", value: [1] }])
   const [columnVisibility, setColumnVisibility] = useState({})
   const [selectedRow, setSelectedRow] = useState(null);
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: [menuQueryKeyLoopUp['item']],
-    queryFn: getAllMenuItems,
-  });
-
-  // Fetch categories
-  const { data: categoryData, isLoading: categoryIsLoading, error: categoryError } = useQuery({
-    queryKey: [queryKeyLoopUp['Category']],
-    queryFn: getAllCategory,
-  });
-
-  useEffect(() => {
-    if (error) {
-      toastError(`Error fetching Menu Item: ${JSON.stringify(error)}`);
-    }
-    if (categoryError) {
-      toastError(`Error fetching categories: ${JSON.stringify(categoryError)}`);
-    }
-  }, [error, categoryError]);
-
-  const categoryOptions = useMemo(() => {
-    if (categoryData) {
-      const categories = categoryData?.data?.categories || [];
-      return categories.map((category) => ({
-        value: category?.name,
-        label: category?.name,
-      }));
-    }
-    return [];
-  }, [categoryData]);
 
   const handleRowClick = useCallback((rowData) => {
     setSelectedRow(rowData);
@@ -75,7 +43,7 @@ export default function MenuTable({
   };
 
   const handleEdit = useCallback((data) => {
-    setIsModalOpen((prv) => ({ ...prv, isOpen: true, isEdit: true, data: data }));
+    setIsModalOpen((prv) => ({ ...prv, isOpen: true, isEdit: true, data: data, isDireact : false }));
   }, []);
 
   const columns = useMemo(() => [

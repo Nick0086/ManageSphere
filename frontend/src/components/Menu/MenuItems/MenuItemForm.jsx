@@ -33,7 +33,7 @@ const defaultValues = {
     status: 1,
 };
 
-const MenuItemForm = memo(({ open, onHide, isEdit, selectedRow }) => {
+const MenuItemForm = memo(({ open, onHide, isEdit, selectedRow, isDireact }) => {
 
     const queryClient = useQueryClient();
     const [imageWarning, setImageWarning] = useState(true);
@@ -47,11 +47,15 @@ const MenuItemForm = memo(({ open, onHide, isEdit, selectedRow }) => {
 
     // Populate form fields when editing an existing item
     useEffect(() => {
-        if (isEdit && selectedRow) {
+        console.log(selectedRow)
+        if ((isEdit && selectedRow) || isDireact) {
+            if(isDireact){
+                setImageWarning(true)
+            }
             form.reset({
                 name: selectedRow.name || '',
                 description: selectedRow.description || '',
-                price: parseFloat(selectedRow.price || 0),
+                price: parseFloat(selectedRow.price) || null,
                 cover_image: selectedRow.cover_image || null,
                 category_id: selectedRow.category_id || null,
                 availability: selectedRow.availability || null,
@@ -135,7 +139,7 @@ const MenuItemForm = memo(({ open, onHide, isEdit, selectedRow }) => {
         Object.keys(data).forEach((key) => {
             formData.append(key, data[key]);
         });
-        if (isEdit) {
+        if (isEdit && !isDireact) {
             updateMenuItemMutation.mutate({menuData:formData, menuItemId:selectedRow?.unique_id})
         } else {
             createMenuItemMutation.mutate(formData)
@@ -189,7 +193,7 @@ const MenuItemForm = memo(({ open, onHide, isEdit, selectedRow }) => {
                                             options={categoryOptions}
                                             placeholder="Select a category"
                                             className="md:col-span-6 col-span-12"
-                                            disabled={createMenuItemMutation?.isPending || updateMenuItemMutation?.isPending}
+                                            disabled={createMenuItemMutation?.isPending || updateMenuItemMutation?.isPending || isDireact}
                                         />
 
                                         {/* Price */}
