@@ -5,7 +5,8 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import { useInView } from 'react-intersection-observer';
 import { Button } from '@/components/ui/button';
-import { Plus, SquarePen } from 'lucide-react';
+import { Plus, SquarePen} from 'lucide-react';
+import MenuFilters from './components/MenuCardFilters';
 
 // Placeholder component for images during loading
 const ImagePlaceholder = memo(() => (
@@ -54,7 +55,7 @@ const MenuItem = memo(({ item, setIsModalOpen }) => {
     <div ref={ref} className="h-full">
       {inView ? (
         <Card className="flex flex-col justify-between overflow-hidden h-full relative ">
-          <Button onClick={() => { setIsModalOpen((prv) => ({ ...prv, isOpen: true, isEdit: true, data: item, isDireact : false })) }} className='absolute top-2 right-2 z-[1] p-1' variant="primary" size="xs">
+          <Button onClick={() => { setIsModalOpen((prv) => ({ ...prv, isOpen: true, isEdit: true, data: item, isDireact: false })) }} className='absolute top-2 right-2 z-[1] p-1' variant="primary" size="xs">
             <SquarePen size={16} />
           </Button>
           <OptimizedImage src={item?.image_details?.url} alt={item?.name} />
@@ -80,49 +81,63 @@ const MenuItem = memo(({ item, setIsModalOpen }) => {
   );
 });
 
-// Main MenuCard component that loads items in batches
-export default function MenuCard({ data, isLoading, setIsModalOpen }) {
+
+export default function MenuCard({ data, isLoading, setIsModalOpen, categoryOptions }) {
+
   const [menuItems, setMenuItems] = useState([]);
   const [displayCount, setDisplayCount] = useState(12);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [menuAvailability, setMenuAvailability] = useState([]);
+  const [selectedStatuses, setSelectedStatuses] = useState([]);
 
   // Observer for the infinite scroll trigger
-  const { ref, inView } = useInView({
-    threshold: 0,
-    rootMargin: '300px 0px', // Increased root margin to load earlier
-  });
+  const { ref, inView } = useInView({ threshold: 0, rootMargin: "300px 0px" });
 
-  // Load all data at once when it changes
   useEffect(() => {
     if (data?.data?.menuItems) {
       setMenuItems(data.data.menuItems);
     }
   }, [data]);
 
-  // Group menu items by category_name
-  const groupedItems = menuItems.reduce((acc, item) => {
-    const category = item.category_name || 'Uncategorized';
-    if (!acc[category]) {
-      acc[category] = [];
-    }
+  // Filtered menu items based on search query and selected categories
+  const filteredItems = menuItems.filter((item) => {
+    const matchesSearch = item?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(item.status);
+    const matchesAvailability = menuAvailability.length === 0 || menuAvailability.includes(item.availability);
+    const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(item.category_name);
+
+    return matchesSearch && matchesStatus && matchesAvailability && matchesCategory;
+  });
+
+
+  const groupedItems = filteredItems.reduce((acc, item) => {
+    const category = item.category_name || "Uncategorized";
+    if (!acc[category]) acc[category] = [];
     acc[category].push(item);
     return acc;
   }, {});
 
-  // Increase display count when bottom of current items is in view
+
   useEffect(() => {
-    if (inView && !loadingMore && menuItems.length > displayCount) {
+    if (inView && !loadingMore && filteredItems.length > displayCount) {
       setLoadingMore(true);
-      // Delay updating display count for smoother render transitions
       setTimeout(() => {
-        setDisplayCount(prevCount => Math.min(prevCount + 6, menuItems.length));
+        setDisplayCount((prevCount) => Math.min(prevCount + 6, filteredItems.length));
         setLoadingMore(false);
       }, 300);
     }
-  }, [inView, loadingMore, menuItems.length, displayCount]);
+  }, [inView, loadingMore, filteredItems.length, displayCount]);
 
-  // Render skeleton loading placeholders if data is not yet available
-  if (isLoading || menuItems.length === 0) {
+  const resetFilters = () => {
+    setSearchQuery("");
+    setSelectedStatuses([]);
+    setMenuAvailability([]);
+    setSelectedCategories([]);
+  };
+
+  if (isLoading) {
     return (
       <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4">
         {Array.from({ length: 6 }).map((_, index) => (
@@ -142,36 +157,61 @@ export default function MenuCard({ data, isLoading, setIsModalOpen }) {
     );
   }
 
+  if (menuItems.length === 0) return <p>No menu items found.</p>;
+
   return (
     <>
+      <MenuFilters
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        selectedStatuses={selectedStatuses}
+        setSelectedStatuses={setSelectedStatuses}
+        selectedCategories={selectedCategories}
+        setSelectedCategories={setSelectedCategories}
+        menuAvailability={menuAvailability}
+        setMenuAvailability={setMenuAvailability}
+        categoryOptions={categoryOptions}
+        resetFilters={resetFilters}
+      />
+
       {Object.entries(groupedItems).map(([category, items]) => (
-        <div key={category} className="pb-6 mb-4 border-b-2 border-dashed border-indigo-300">
-          {/* Category Title */}
-          <div className="flex items-center justify-between bg-muted/80  p-3 rounded-md mb-2">
+        <div key={category} className="pb-6 mb-4 border-b-2 border-dashed border-indigo-300 px-2">
+          <div className="flex items-center justify-between bg-muted/80 p-3 rounded-md mb-2">
             <div className="flex items-center gap-2">
               <div className="h-6 w-1.5 bg-primary rounded-full hidden sm:block"></div>
               <h2 className="text-xl font-semibold">{category}</h2>
-              <Chip variant="light" color="slate" radius="md" size="xs">{items.length} {items.length === 1 ? "item" : "items"}</Chip>
+              <Chip variant="light" color="slate" radius="md" size="xs">
+                {items.length} {items.length === 1 ? "item" : "items"}
+              </Chip>
             </div>
-            <Button onClick={() => { setIsModalOpen((prv) => ({ ...prv, isDireact : true, isOpen: true, isEdit: false, data: { name: '', description: '', price: '', cover_image: '', category_id: items[0]?.category_id, status: 1, availability: 'in_stock' } })) }} variant="primary" className='!text-xs' size="xs">
+            <Button
+              onClick={() =>
+                setIsModalOpen((prev) => ({
+                  ...prev,
+                  isDirect: true,
+                  isOpen: true,
+                  isEdit: false,
+                  data: { name: "", description: "", price: "", cover_image: "", category_id: items[0]?.category_id, status: 1, availability: "in_stock" },
+                }))
+              }
+              className="!text-xs text-indigo-500 gap-2 border bg-white hover:text-white border-indigo-500 hover:bg-indigo-500"
+              size="xs"
+            >
               <Plus size={14} />
               Add to {category}
             </Button>
           </div>
-          {/* Menu Items Grid */}
+
           <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4">
             {items.slice(0, displayCount).map((item) => (
-              <MenuItem
-                key={item?.unique_id || item?.id || `item-${item?.name}-${item?.price}`}
-                item={item}
-                setIsModalOpen={setIsModalOpen}
-              />
+              <MenuItem key={item.unique_id || item.id} item={item} setIsModalOpen={setIsModalOpen} />
             ))}
           </div>
         </div>
       ))}
-      {displayCount < menuItems.length && (
-        <div ref={ref} className="w-full h-20 flex items-center justify-center">
+
+      {displayCount < filteredItems.length && (
+        <div ref={ref} className="w-full h-20 flex items-center justify-center px-2">
           <div className="w-8 h-8 border-t-2 border-b-2 border-gray-500 rounded-full animate-spin"></div>
         </div>
       )}

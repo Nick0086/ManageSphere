@@ -14,7 +14,7 @@ import { toastError } from '@/utils/toast-utils'
 
 // Memoize the header component to prevent unnecessary re-renders
 const Header = memo(({ onAddClick }) => (
-  <div className="px-2 my-2 flex justify-between items-center border-b">
+  <div className="px-2 my-2 pb-2 flex justify-between items-center border-b">
     <h2 className="text-2xl font-medium">Menu Items</h2>
     <div className="flex items-center gap-2">
       <Button
@@ -117,7 +117,7 @@ export default function MenuItemsIndex() {
         )}
 
         {activeTab === "card-view" && (
-          <TabsContent value="card-view" forceMount className="px-2">
+          <TabsContent value="card-view" forceMount >
             <MemoizedMenuCard data={data} isLoading={isLoading} categoryOptions={categoryOptions} setIsModalOpen={setIsModalOpen} categoryIsLoading={categoryIsLoading}/>
           </TabsContent>
         )}
