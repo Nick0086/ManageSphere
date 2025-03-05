@@ -1,7 +1,8 @@
-import { Input, Button } from "@/components/ui";
 import { FacetedFilter } from "@/components/ui/FacetedFilter";
 import { X } from "lucide-react";
 import { statusOptions, stockOptions } from "../utils";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function MenuFilters({
     searchQuery,
