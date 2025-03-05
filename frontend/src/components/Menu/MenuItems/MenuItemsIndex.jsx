@@ -46,15 +46,15 @@ const MemoizedMenuTable = memo(MenuTable);
 const MemoizedMenuCard = memo(MenuCard);
 
 export default function MenuItemsIndex() {
-  const [isModalOpen, setIsModalOpen] = useState({ isOpen: false, isEdit: false, data: null, isDireact : false });
+  const [isModalOpen, setIsModalOpen] = useState({ isOpen: false, isEdit: false, data: null, isDirect : false });
   const [activeTab, setActiveTab] = useState("table-view");
 
   const handleModalClose = useCallback(() => {
-    setIsModalOpen((prv) => ({ ...prv, isOpen: false, isEdit: false, data: null , isDireact : false}));
+    setIsModalOpen((prv) => ({ ...prv, isOpen: false, isEdit: false, data: null , isDirect : false}));
   }, []);
 
   const handleAddMenuItem = useCallback(() => {
-    setIsModalOpen((prv) => ({ ...prv, isOpen: true, isEdit: false, data: null , isDireact : false}));
+    setIsModalOpen((prv) => ({ ...prv, isOpen: true, isEdit: false, data: null , isDirect : false}));
   }, []);
 
   const handleTabChange = useCallback((value) => {
@@ -99,7 +99,7 @@ export default function MenuItemsIndex() {
         isEdit={isModalOpen?.isEdit}
         selectedRow={isModalOpen?.data}
         onHide={handleModalClose}
-        isDireact={isModalOpen?.isDireact}
+        isDireact={isModalOpen?.isDirect}
       />
 
       <Tabs

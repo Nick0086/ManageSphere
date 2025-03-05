@@ -55,7 +55,7 @@ const MenuItem = memo(({ item, setIsModalOpen }) => {
     <div ref={ref} className="h-full">
       {inView ? (
         <Card className="flex flex-col justify-between overflow-hidden h-full relative ">
-          <Button onClick={() => { setIsModalOpen((prv) => ({ ...prv, isOpen: true, isEdit: true, data: item, isDireact: false })) }} className='absolute top-2 right-2 z-[1] p-1' variant="primary" size="xs">
+          <Button onClick={() => { setIsModalOpen((prv) => ({ ...prv, isOpen: true, isEdit: true, data: item, isDirect: false })) }} className='absolute top-2 right-2 z-[1] p-1' variant="primary" size="xs">
             <SquarePen size={16} />
           </Button>
           <OptimizedImage src={item?.image_details?.url} alt={item?.name} />

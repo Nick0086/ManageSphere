@@ -31,12 +31,12 @@ export default function MenuFilters({
 
                 <FacetedFilter title="Availability" options={stockOptions} onFilterChange={setMenuAvailability} value={menuAvailability} />
 
-                {(searchQuery || selectedCategories.length || menuAvailability.length || selectedStatuses.length) && (
+                {(searchQuery || selectedCategories.length || menuAvailability.length || selectedStatuses.length) ? (
                     <Button variant="ghost" onClick={resetFilters} className="text-red-500 h-8 px-1 lg:px-2 hover:bg-red-100 hover:text-red-700">
                         Reset
                         <X className="ml-2 h-4 w-4" />
                     </Button>
-                )}
+                ) : null}
             </div>
         </div>
     );
