@@ -157,7 +157,7 @@ export default function MenuCard({ data, isLoading, setIsModalOpen, categoryOpti
     );
   }
 
-  if (menuItems.length === 0) return <p>No menu items found.</p>;
+  if (menuItems.length === 0) return<div className='flex items-center justify-center w-full h-[60dvh]' ><p className='text-xl font-semibold text-primary' >No menu items found.</p></div> ;
 
   return (
     <>
