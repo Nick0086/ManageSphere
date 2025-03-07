@@ -61,7 +61,7 @@ CREATE TABLE categories (
     FOREIGN KEY (user_id) REFERENCES users(unique_id) ON DELETE CASCADE
 );
 
-    CREATE TABLE menu_items (
+CREATE TABLE menu_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     unique_id CHAR(36) NOT NULL UNIQUE,  -- UUID as a unique identifier
     user_id CHAR(36) NOT NULL,  -- Each item belongs to a user (café)
@@ -79,4 +79,14 @@ CREATE TABLE categories (
     FOREIGN KEY (category_id) REFERENCES categories(unique_id) ON DELETE CASCADE
 );
 
-
+CREATE TABLE templates (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    unique_id CHAR(36) NOT NULL UNIQUE,  -- UUID for the template
+    user_id CHAR(36) NOT NULL,           -- Owner of the template (café admin)
+    name VARCHAR(255) NOT NULL,          -- Template name (e.g., "Modern Coffee Shop")
+    config JSON NOT NULL,                -- Template settings (colors, fonts, layout)
+    is_default BOOLEAN DEFAULT FALSE,    -- Mark as the user's default template
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(unique_id) ON DELETE CASCADE
+);

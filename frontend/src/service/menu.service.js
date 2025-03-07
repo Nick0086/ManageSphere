@@ -52,12 +52,38 @@ export const createMenuItem = async (data) => {
 
 export const updateMenuItem = async (data) => {
     try {
-        console.log(data)
         const response = await api.put(`/menu/menu-items/${data?.menuItemId}`, data?.menuData, {
             headers: {
                 "Content-Type": "multipart/form-data",
             },
         });
+        return { success: true, data: response.data };
+    } catch (error) {
+        throw handleApiError(error);
+    }
+}
+
+export const getAllTemplates = async () => {
+    try {
+        const response = await api.get('/menu/template');
+        return { success: true, data: response.data };
+    } catch (error) {
+        throw handleApiError(error);
+    }
+}
+
+export const createTemplate = async (data) => {
+    try {
+        const response = await api.post('/menu/template', data);
+        return { success: true, data: response.data };
+    } catch (error) {
+        throw handleApiError(error);
+    }
+}
+
+export const updateTemplate = async (data) => {
+    try {
+        const response = await api.put(`/menu/template/${data?.templateId}`, data?.templateData);
         return { success: true, data: response.data };
     } catch (error) {
         throw handleApiError(error);

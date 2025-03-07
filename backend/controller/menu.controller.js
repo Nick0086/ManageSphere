@@ -46,6 +46,18 @@ const upload = multer({
 );
 */
 
+/*CREATE TABLE templates (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    unique_id CHAR(36) NOT NULL UNIQUE,  -- UUID for the template
+    user_id CHAR(36) NOT NULL,           -- Owner of the template (café admin)
+    name VARCHAR(255) NOT NULL,          -- Template name (e.g., "Modern Coffee Shop")
+    config JSON NOT NULL,                -- Template settings (colors, fonts, layout)
+    is_default BOOLEAN DEFAULT FALSE,    -- Mark as the user's default template
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(unique_id) ON DELETE CASCADE
+);*/
+
 export const getAllCategory = async (req, res) => {
     try {
         const { unique_id: userId } = req.user;
@@ -556,5 +568,128 @@ export const updateMenuItem = async (req, res) => {
         });
     } catch (error) {
         handleError('menu.controller.js', 'updateMenuItem', res, error, 'An unexpected error occurred while updating the Menu Item');
+    }
+};
+
+
+// =============== template ================
+
+export const getAllTemplatesList = async (req, res) => {
+    try {
+        const { unique_id: userId } = req.user;
+        const filterParams = [userId];
+
+        const sql = `SELECT * FROM templates WHERE user_id = ?`;
+
+        const result = await query(sql, filterParams);
+
+        return res.status(200).json({
+            success: true,
+            message: result?.length > 0 ? "Templates fetched successfully" : "No Template found.",
+            templates: result || [],
+            status: "success"
+        });
+
+    } catch (error) {
+        handleError('menu.controller.js', 'getAllTemplatesList', res, error, 'An unexpected error occurred while fetching Template.');
+    }
+}
+
+export const createTemplate = async (req, res) => {
+    try {
+        const { unique_id: userId } = req.user;
+        const { name, config, is_default } = req.body;
+
+        const existingTemplate = await query(`SELECT name FROM templates WHERE name = ? AND user_id = ?`, [name, userId]);
+
+        if (existingTemplate?.length > 0) {
+            return res.status(400).json({
+                status: "error",
+                code: "TEMPLATE_NAME_ALREADY_EXISTS",
+                message: `Template name ${name} already exists`
+            });
+        }
+
+        const templateId = createUniqueId('TEMP');
+        const queryParams = [templateId, name, JSON.stringify(config || {}), is_default, userId];
+        const sql = `INSERT INTO templates (unique_id, name, config, is_default, user_id) VALUES (?, ?, ?, ?, ?)`;
+
+        const result = await query(sql, queryParams);
+
+        if (result.affectedRows > 0) {
+            return res.status(201).json({
+                status: "success",
+                message: `Template ${name} created successfully`,
+                template: result.insertId,
+                status: "success"
+            });
+        } else {
+            return res.status(400).json({
+                status: "error",
+                code: "TEMPLATE_CREATION_FAILED",
+                message: "Failed to create Template"
+            });
+        }
+
+    } catch (error) {
+        handleError('menu.controller.js', 'addTemplate', res, error, 'An unexpected error occurred while creating the Template.');
+
+    }
+}
+
+export const updateTemplate = async (req, res) => {
+    try {
+        const { unique_id: userId } = req.user;
+        const { templateId } = req.params;
+        const { name, config, is_default } = req.body;
+
+        // Ensure the template exists and belongs to the user
+        const existingTemplates = await query(`SELECT * FROM templates WHERE unique_id = ? AND user_id = ?`, [templateId, userId]);
+        if (!existingTemplates || existingTemplates?.length === 0) {
+            return res.status(404).json({
+                status: "error",
+                code: "TEMPLATE_NOT_FOUND",
+                message: "Template not found."
+            });
+        }
+
+        // If updating the name, check that no other template has the same name
+        if (name && name !== existingTemplates[0].name) {
+            const duplicateName = await query(
+                `SELECT unique_id FROM templates WHERE name = ? AND user_id = ? AND unique_id != ?`,
+                [name, userId, templateId]
+            );
+            if (duplicateName.length > 0) {
+                return res.status(400).json({
+                    status: "error",
+                    code: "TEMPLATE_NAME_ALREADY_EXISTS",
+                    message: `Template name "${name}" already exists.`
+                });
+            }
+        }
+
+        const updateQuery = `UPDATE templates SET name = ? , config = ? , is_default = ? WHERE unique_id = ? AND user_id = ?`;
+        const updateParams = [name, JSON.stringify(config || {}), is_default, templateId, userId];
+
+        const result = await query(updateQuery, updateParams);
+
+        if (is_default) {
+            await query(`UPDATE templates SET is_default = ? WHERE unique_id != ? AND user_id = ?`, [false, templateId, userId])
+        }
+
+        if (result?.affectedRows > 0) {
+            return res.status(200).json({
+                status: "success",
+                message: `Template ${name} updated successfully.`
+            });
+        } else {
+            return res.status(400).json({
+                status: "error",
+                code: "TEMPLATE_UPDATE_FAILED",
+                message: "Failed to update template."
+            });
+        }
+    } catch (error) {
+        handleError('template.controller.js', 'updateTemplate', res, error, 'An unexpected error occurred while updating the template.');
     }
 };

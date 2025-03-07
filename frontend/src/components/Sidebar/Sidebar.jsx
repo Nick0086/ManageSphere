@@ -7,6 +7,7 @@ import { UserNav } from '../ui/Layouts/user-nav'
 
 import CafeIcon from '../../assets/SVG/coffee-cup-coffee.svg?react';
 import Dashboard from '../../assets/SVG/Dashboard.svg?react';
+import Menu from '../../assets/SVG/menu.svg?react';
 
 const sideBarData = [
     {
@@ -17,7 +18,7 @@ const sideBarData = [
     },
     {
         title: 'Menu ',
-        icon: <ListTodo size={16} />,
+        icon: <Menu />,
         link: '/menu-management',
         isCollapsible: false,
     }
