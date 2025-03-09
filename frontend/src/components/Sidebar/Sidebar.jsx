@@ -8,6 +8,7 @@ import { UserNav } from '../ui/Layouts/user-nav'
 import CafeIcon from '../../assets/SVG/coffee-cup-coffee.svg?react';
 import Dashboard from '../../assets/SVG/Dashboard.svg?react';
 import Menu from '../../assets/SVG/menu.svg?react';
+import { cn } from '@/lib/utils'
 
 const sideBarData = [
     {
@@ -26,7 +27,14 @@ const sideBarData = [
 
 
 
-export default function Sidebar() {
+export default function Sidebar({
+    isfullScreen
+}) {
+
+    if (isfullScreen) {
+        return <Outlet />;
+    }
+
 
     const location = useLocation()
 
@@ -37,14 +45,15 @@ export default function Sidebar() {
     const isActiveSubMenu = (link) => {
         return location.pathname.split('/')[2] === link.split('/')[2]
     }
+
     return (
         <SidebarProvider>
-            <SidebarComponent className='tw-shadow-xl' collapsible="icon" style={{ fontFamily: 'Nunito, "Segoe UI", arial' }} >
+            <SidebarComponent className={cn('shadow')} collapsible="icon" style={{ fontFamily: 'Nunito, "Segoe UI", arial' }} >
                 <SidebarHeader>
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <Link className="flex justify-center items-center gap-2 my-2 w-full tw-no-underline tw-text-inherit" to={'/'}>
-                                <CafeIcon/>
+                                <CafeIcon />
                                 <b className="text-lg tracking-[0.1em] group-data-[collapsible=icon]:hidden">CaféBite</b>
                             </Link>
                         </SidebarMenuItem>
@@ -76,8 +85,8 @@ export default function Sidebar() {
                     </SidebarGroup>
                 </SidebarContent>
             </SidebarComponent>
-            <SidebarInset className='h-full w-full min-w-0' >
-                <header className="sticky flex h-12 shrink-0 top-0 z-10 w-full bg-background/95 shadow backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:shadow-secondary px-4">
+            <SidebarInset className={cn('h-full w-full min-w-0')} >
+                <header className={cn("sticky flex h-12 shrink-0 top-0 z-10 w-full bg-background/95 shadow backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:shadow-secondary px-4")}>
                     <div className="flex items-center gap-2">
                         <SidebarTrigger className="-ml-1" />
                         <Separator orientation="vertical" className="mr-2 h-4" />

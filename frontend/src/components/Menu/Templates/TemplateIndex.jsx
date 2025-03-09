@@ -13,9 +13,11 @@ import RowDetailsModal from '@/common/Modal/RowDetailsModal';
 import CommonTable from '@/common/Table/CommonTable';
 import TemplateForm from './TemplateForm';
 import CommonTableToolbar from './components/CommonTableToolbar';
+import { useNavigate } from 'react-router';
 
 export default function TemplateIndex() {
 
+  const navigate = useNavigate();
   const [sorting, setSorting] = useState([])
   const [columnFilters, setColumnFilters] = useState([])
   const [columnVisibility, setColumnVisibility] = useState({})
@@ -46,7 +48,8 @@ export default function TemplateIndex() {
   }, []);
 
   const handleEdit = useCallback((data) => {
-    handleOpenModal({ data, isOpen: true, isEdit: true });
+    navigate(`../tamplate-editor/${data?.unique_id}`)
+    // handleOpenModal({ data, isOpen: true, isEdit: true });
   }, []);
 
   const columns = useMemo(() => [
@@ -146,7 +149,7 @@ export default function TemplateIndex() {
         <div className=" px-2 my-2 flex justify-between items-center">
           <h2 className='text-2xl font-medium' >Templates</h2>
           <div className="flex items-center gap-2">
-            <Button onClick={() => handleOpenModal({ isOpen: true, isEdit: false, data: null })} size='sm' className='text-indigo-500 gap-2 border bg-white hover:text-white border-indigo-500 hover:bg-indigo-500'>
+            <Button onClick={() => navigate('../tamplate-editor/new')} size='sm' className='text-indigo-500 gap-2 border bg-white hover:text-white border-indigo-500 hover:bg-indigo-500'>
               <div className='flex items-center gap-1 '>
                 <Plus size={18} />
                 <span className='text-sm'>Add Template</span>

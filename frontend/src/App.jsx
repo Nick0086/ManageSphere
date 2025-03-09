@@ -18,18 +18,21 @@ import 'react-image-crop/dist/ReactCrop.css';
 function App() {
 
   const location = useLocation();
-  const restriction = ['login', 'register-user', 'reset-password']
-  const isLoginRoute = location.pathname === "/login" || location.pathname === "/register-user" || location.pathname === '/reset-password';
+  const path = location.pathname.split('/');
+  const restrictedRoutes = ['login', 'register-user', 'reset-password'];
+  const fullScreen = ['tamplate-editor']
+  const isRestrictedRoute = restrictedRoutes.some(route => path.includes(route));
+  const isfullScreen = fullScreen?.some(route => path.includes(route));
   // console.log({ isLoginRoute }, location.pathname)
 
   return (
     <>
 
       {
-        !isLoginRoute && (
+        !isRestrictedRoute && (
           <Routes>
             <Route path="/" element={<PrivateRoutes />}>
-              <Route path='' element={<Sidebar />}>
+              <Route path='' element={<Sidebar isfullScreen={isfullScreen} />}>
                 <Route path='' element={<div>👋 Hyy</div>} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/menu-management/*" element={<MenuRoutes />} />
@@ -41,7 +44,7 @@ function App() {
       }
 
       {
-        isLoginRoute && (
+        isRestrictedRoute && (
           <Routes >
             <Route exact path="/login" element={<Login />} />
             <Route exact path="/register-user" element={<SignIn />} />

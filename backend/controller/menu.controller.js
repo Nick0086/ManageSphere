@@ -125,7 +125,7 @@ export const addCategory = async (req, res) => {
             'SELECT COUNT(*) AS total FROM categories WHERE user_id = ?',
             [userId]
         );
-        const position = (categoryCountResult?.total || 0) + 1;
+        const position = (parseInt(categoryCountResult?.total || 0) || 0) + 1;
         const categoryId = createUniqueId('CAT');
 
         // Insert new category
