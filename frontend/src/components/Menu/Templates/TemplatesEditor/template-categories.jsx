@@ -18,6 +18,7 @@ import {
 import { Eye, EyeOff, GripVertical, Pencil } from 'lucide-react'
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { CSS } from '@dnd-kit/utilities'
+import SlackLoader from '@/components/ui/CustomLoaders/SlackLoader'
 
 /**
  * Sortable item component representing a single category
@@ -89,7 +90,6 @@ function SortableCategoryItem({ category, onToggleVisibility, onEdit }) {
  * Allows reordering, toggling visibility, and editing of categories
  */
 export default function TemplateCategories({
-  categoryData,
   isCategoryLoading,
   templateConfig,
   setTemplateConfig
@@ -173,7 +173,7 @@ export default function TemplateCategories({
 
   // Loading state
   if (isCategoryLoading) {
-    return <div className="p-4">Loading categories...</div>;
+    return <div className="p-4 h-96 flex items-center justify-center "><SlackLoader/></div>;
   }
 
   // Empty state

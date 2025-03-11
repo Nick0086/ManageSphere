@@ -3,13 +3,16 @@ import React, { useState } from 'react'
 import TemplateGlobal from './template-global';
 import TemplateCategories from './template-categories';
 import TemplateStyling from './template-Styling';
+import TemplateItems from './template-items';
 
 export default function TemplateSideBarTabs({
     categoryData,
     isCategoryLoading,
     templateConfig,
-    setTemplateConfig
-
+    setTemplateConfig,
+    isMenuItemLoading,
+    currenctCategoryItems,
+    setCurrenctCategoryItems
 }) {
 
     const [selectedTab, setSelectedTab] = useState('Global');
@@ -27,6 +30,9 @@ export default function TemplateSideBarTabs({
                     <TabsTrigger value="categories" variant="team" className="text-xs text-red-500 border-red-500 data-[state=active]:bg-red-200 data-[state=active]:text-red-700 py-1.5 px-2">
                         Categories
                     </TabsTrigger>
+                    <TabsTrigger value="items" variant="team" className="text-xs text-green-500 border-green-500 data-[state=active]:bg-green-200 data-[state=active]:text-green-700 py-1.5 px-2">
+                        Items
+                    </TabsTrigger>
                     <TabsTrigger value="Styling" variant="team" className="text-xs text-yellow-500 border-yellow-500 data-[state=active]:bg-yellow-200 data-[state=active]:text-yellow-700 py-1.5 px-2">
                         Styling
                     </TabsTrigger>
@@ -36,10 +42,20 @@ export default function TemplateSideBarTabs({
 
                 <TabsContent value='categories' >
                     <TemplateCategories
-                        categoryData={categoryData}
                         isCategoryLoading={isCategoryLoading}
                         templateConfig={templateConfig}
                         setTemplateConfig={setTemplateConfig}
+                    />
+                </TabsContent>
+
+                <TabsContent value='items' >
+                    <TemplateItems 
+                        isLoading={isCategoryLoading || isMenuItemLoading}
+                        categoryData={categoryData}
+                        templateConfig={templateConfig}
+                        setTemplateConfig={setTemplateConfig}
+                        currentCategoryItems={currenctCategoryItems}
+                        setCurrentCategoryItems={setCurrenctCategoryItems}
                     />
                 </TabsContent>
 

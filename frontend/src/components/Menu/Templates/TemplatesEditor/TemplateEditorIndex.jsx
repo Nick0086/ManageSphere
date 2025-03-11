@@ -19,6 +19,8 @@ export default function TemplateEditorIndex() {
 
   const [templateConfig, setTemplateConfig] = useState(templateDefaultValue);
   const [templateName, setTemplateName] = useState('Default Template');
+  const [currenctCategoryItems, setCurrenctCategoryItems] = useState(null);
+
 
   const { data: categoryData, isLoading: isCategoryLoading, error: categoryError } = useQuery({
     queryKey: [templateQueryKeyLoopUp['TEMPLATE_CATEGORY_LIST']],
@@ -46,7 +48,7 @@ export default function TemplateEditorIndex() {
     return menuItems.reduce((acc, item) => {
       const categoryId = item?.category_id || "Uncategorized";
       if (!acc[categoryId]) acc[categoryId] = [];
-      acc[categoryId].push(item);
+      acc[categoryId].push({...item,visible: true});
       return acc;
     }, {});
 
@@ -68,12 +70,10 @@ export default function TemplateEditorIndex() {
 
   useEffect(() => {
     if (processedCategories.length > 0) {
+      setCurrenctCategoryItems(processedCategories[0]?.unique_id || null)
       setTemplateConfig((prev) => ({
         ...prev,
-        categories: [
-          ...prev.categories,
-          ...processedCategories
-        ]
+        categories: processedCategories
       }));
     }
   }, [processedCategories]);
@@ -104,8 +104,11 @@ export default function TemplateEditorIndex() {
         <TemplateSideBarTabs
           categoryData={categoryData}
           isCategoryLoading={isCategoryLoading}
+          isMenuItemLoading={isMenuItemLoading}
           templateConfig={templateConfig}
           setTemplateConfig={setTemplateConfig}
+          currenctCategoryItems={currenctCategoryItems}
+          setCurrenctCategoryItems={setCurrenctCategoryItems}
         />
         
       </SidebarComponent>
