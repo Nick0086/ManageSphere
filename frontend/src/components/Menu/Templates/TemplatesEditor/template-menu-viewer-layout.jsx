@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/c
 import { Chip } from '@/components/ui/chip';
 import { cn } from '@/lib/utils';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import React, { memo, useEffect, useState } from 'react'
+import React, { memo, useEffect, useState, useMemo, useCallback } from 'react'
 import { useInView } from 'react-intersection-observer';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 
@@ -40,26 +40,78 @@ const OptimizedImage = memo(({ src, alt }) => {
     );
 });
 
-const MenuItem = memo(({ item }) => {
+// Extract styles generation to avoid recalculations in renders
+const getCardStyle = (backgroundColor) => 
+    backgroundColor ? { backgroundColor } : {};
 
+const getTitleStyle = (color) => 
+    color ? { color } : {};
+
+const getDescriptionStyle = (color) => 
+    color ? { color } : {};
+
+const getSectionStyle = (backgroundColor) => 
+    backgroundColor ? { backgroundColor } : {};
+
+const getCategoryIndicatorStyle = (color) => 
+    color ? { backgroundColor: color } : {};
+
+// MenuItem component with optimized style handling
+const MenuItem = memo(({ item, globalConfig }) => {
     const { ref, inView } = useInView({
         threshold: 0.1,
         triggerOnce: true,
         rootMargin: '100px 0px', // Reduced margin for earlier loading
     });
 
+    // Memoize styles to prevent recalculation on every render
+    const cardStyle = useMemo(() => 
+        getCardStyle(globalConfig?.card_background_color), 
+        [globalConfig?.card_background_color]
+    );
+    
+    const titleStyle = useMemo(() => 
+        getTitleStyle(globalConfig?.card_title_color), 
+        [globalConfig?.card_title_color]
+    );
+    
+    const descriptionStyle = useMemo(() => 
+        getDescriptionStyle(globalConfig?.description_color), 
+        [globalConfig?.description_color]
+    );
+    
+    const priceStyle = useMemo(() => 
+        getTitleStyle(globalConfig?.card_title_color), 
+        [globalConfig?.card_title_color]
+    );
+
     return (
         <div ref={ref} className="h-full">
             {inView ? (
-                <Card className="flex flex-col justify-between overflow-hidden h-full relative ">
+                <Card
+                    style={cardStyle}
+                    className="flex flex-col justify-between overflow-hidden h-full relative"
+                >
                     <OptimizedImage src={item?.image_details?.url} alt={item?.name} />
                     <CardContent className="flex flex-col flex-auto justify-between p-4 px-2">
                         <div className="flex flex-col gap-1">
-                            <CardTitle className="text-lg text-primary">{item?.name}</CardTitle>
-                            <CardDescription className="text-secondary">{item?.description}</CardDescription>
+                            <CardTitle
+                                style={titleStyle}
+                                className="text-lg text-primary"
+                            >
+                                {item?.name}
+                            </CardTitle>
+                            <CardDescription
+                                style={descriptionStyle}
+                                className="text-secondary"
+                            >
+                                {item?.description}
+                            </CardDescription>
                         </div>
                         <div className="flex items-center justify-between mt-2">
-                            <span className="text-base font-bold">${item?.price}</span>
+                            <span style={priceStyle} className="text-base font-bold">
+                                ${item?.price}
+                            </span>
                             {item.availability === 'in_stock' ? (
                                 <Chip variant="light" color="green" radius="md" size="xs">In Stock</Chip>
                             ) : (
@@ -73,59 +125,150 @@ const MenuItem = memo(({ item }) => {
             )}
         </div>
     );
+}, (prevProps, nextProps) => {
+    // Deep comparison for items and config to prevent unnecessary re-renders
+    return (
+        prevProps.item === nextProps.item &&
+        prevProps.globalConfig?.card_background_color === nextProps.globalConfig?.card_background_color &&
+        prevProps.globalConfig?.card_title_color === nextProps.globalConfig?.card_title_color &&
+        prevProps.globalConfig?.description_color === nextProps.globalConfig?.description_color
+    );
+});
+
+// CategoryAccordion component with optimized style handling
+const CategoryAccordion = memo(({ category, displayCount, globalConfig }) => {
+    const categoryId = category.id || category.unique_id || category.name;
+    const { ref, inView } = useInView({
+        threshold: 0.1,
+        rootMargin: "300px 0px",
+        triggerOnce: true
+    });
+
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    useEffect(() => {
+        if (inView && !isLoaded) {
+            setIsLoaded(true);
+        }
+    }, [inView, isLoaded]);
+
+    // Memoize styles to prevent recalculation on every render
+    const sectionStyle = useMemo(() => 
+        getSectionStyle(globalConfig?.section_background_color), 
+        [globalConfig?.section_background_color]
+    );
+    
+    const indicatorStyle = useMemo(() => 
+        getCategoryIndicatorStyle(globalConfig?.title_color), 
+        [globalConfig?.title_color]
+    );
+    
+    const titleStyle = useMemo(() => 
+        getTitleStyle(globalConfig?.title_color), 
+        [globalConfig?.title_color]
+    );
+
+    // Memoize filtered items to prevent recalculation
+    const visibleItems = useMemo(() => 
+        category?.items?.filter(i => i?.visible).slice(0, displayCount) || [],
+        [category?.items, displayCount]
+    );
+
+    return (
+        <AccordionItem
+            key={categoryId}
+            value={categoryId}
+            className={cn("bg-card rounded-md overflow-hidden border-none px-3")}
+            style={sectionStyle}
+            ref={ref}
+        >
+            <AccordionTrigger className="py-3 px-2 hover:no-underline">
+                <div className="flex items-center gap-2">
+                    <div
+                        className="h-6 w-1.5 bg-primary rounded-full hidden sm:block"
+                        style={indicatorStyle}
+                    ></div>
+                    <h2
+                        className="text-xl font-semibold"
+                        style={titleStyle}
+                    >
+                        {category?.name}
+                    </h2>
+                </div>
+            </AccordionTrigger>
+            <AccordionContent className="pt-2">
+                {inView || isLoaded ? (
+                    <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4">
+                        {visibleItems.map((item) => (
+                            <MenuItem 
+                                key={item.unique_id || item.id} 
+                                globalConfig={globalConfig} 
+                                item={item} 
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="h-20 bg-gray-100 animate-pulse rounded-md"></div>
+                )}
+            </AccordionContent>
+        </AccordionItem>
+    );
+}, (prevProps, nextProps) => {
+    // Implement custom comparison for CategoryAccordion to prevent unnecessary re-renders
+    return (
+        prevProps.category === nextProps.category &&
+        prevProps.displayCount === nextProps.displayCount &&
+        prevProps.globalConfig?.section_background_color === nextProps.globalConfig?.section_background_color &&
+        prevProps.globalConfig?.title_color === nextProps.globalConfig?.title_color
+    );
 });
 
 export default function TemplateMenuViewerLayout({ templateConfig }) {
-
-    const categories = templateConfig?.categories || [];
-
-    const [displayCount, setDisplayCount] = useState(12);
-    const [loadingMore, setLoadingMore] = useState(false);
-
-    const { ref, inView } = useInView({ threshold: 0, rootMargin: "300px 0px" });
-
-    useEffect(() => {
-        if (inView && !loadingMore && categories?.length > displayCount) {
-            setLoadingMore(true);
-            setTimeout(() => {
-                setDisplayCount((prevCount) => Math.min(prevCount + 6, categories.length));
-                setLoadingMore(false);
-            }, 300);
-        }
-    }, [inView, loadingMore, categories?.length, displayCount]);
-
-    return (
-        <div className='p-4 bg-gray-100/90 min-h-[90dvh] max-h-[90dvh] overflow-auto'>
-            <Accordion type="multiple" defaultValue={categories.map(c => c.id || c.unique_id || c.name)} className="space-y-4">
-                {categories?.filter(category => category?.visible)?.map((category) => {
-                    const categoryId = category.id || category.unique_id || category.name;
-
-                    return (
-                        <AccordionItem
-                            key={categoryId}
-                            value={categoryId}
-                            className={cn("bg-card rounded-md overflow-hidden border-none px-3")}
-                        >
-                            <AccordionTrigger className="py-3 px-2 hover:no-underline">
-                                <div className="flex items-center gap-2">
-                                    <div className="h-6 w-1.5 bg-primary rounded-full hidden sm:block"></div>
-                                    <h2 className="text-xl font-semibold">{category?.name}</h2>
-                                </div>
-                            </AccordionTrigger>
-                            <AccordionContent className="pt-2">
-                                <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4">
-                                    {category?.items?.filter(i => i?.visible).slice(0, displayCount).map((item) => (
-                                        <MenuItem key={item.unique_id || item.id} item={item} />
-                                    ))}
-                                </div>
-                            </AccordionContent>
-                        </AccordionItem>
-                    );
-                })}
-            </Accordion>
-
-            <div ref={ref} />
-        </div>
+    // Extract and memoize configuration to avoid recalculations
+    const { categories = [], global: globalConfig = {} } = templateConfig || {};
+    
+    // Filter visible categories and memoize the result
+    const visibleCategories = useMemo(() =>
+        categories.filter(category => category?.visible),
+        [categories]
     );
 
+    // Get the first category's ID for default open state
+    const firstCategoryId = useMemo(() => {
+        if (visibleCategories.length > 0) {
+            const firstCategory = visibleCategories[0];
+            return firstCategory.id || firstCategory.unique_id || firstCategory.name;
+        }
+        return null;
+    }, [visibleCategories]);
+
+    const [displayCount, setDisplayCount] = useState(10); // Initial count of items to display per category
+
+    // Memoize the background style
+    const backgroundStyle = useMemo(() => 
+        globalConfig?.background_color ? { backgroundColor: globalConfig.background_color } : {},
+        [globalConfig?.background_color]
+    );
+
+    return (
+        <div
+            className='p-4 bg-gray-100/90 min-h-[90dvh] max-h-[90dvh] overflow-auto'
+            style={backgroundStyle}
+        >
+            <Accordion
+                type="multiple"
+                defaultValue={firstCategoryId ? [firstCategoryId] : []}
+                className="space-y-4"
+            >
+                {visibleCategories.map((category) => (
+                    <CategoryAccordion
+                        key={category.id || category.unique_id || category.name}
+                        globalConfig={globalConfig}
+                        category={category}
+                        displayCount={displayCount}
+                    />
+                ))}
+            </Accordion>
+        </div>
+    );
 }

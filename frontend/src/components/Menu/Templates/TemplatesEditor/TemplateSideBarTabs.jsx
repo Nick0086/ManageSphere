@@ -38,7 +38,9 @@ export default function TemplateSideBarTabs({
                     </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value='Global' ><TemplateGlobal /></TabsContent>
+                <TabsContent value='Global' >
+                    <TemplateGlobal templateConfig={templateConfig} setTemplateConfig={setTemplateConfig} />
+                </TabsContent>
 
                 <TabsContent value='categories' >
                     <TemplateCategories
@@ -49,7 +51,7 @@ export default function TemplateSideBarTabs({
                 </TabsContent>
 
                 <TabsContent value='items' >
-                    <TemplateItems 
+                    <TemplateItems
                         isLoading={isCategoryLoading || isMenuItemLoading}
                         categoryData={categoryData}
                         templateConfig={templateConfig}

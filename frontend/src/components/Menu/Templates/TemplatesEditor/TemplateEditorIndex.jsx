@@ -13,6 +13,7 @@ import PulsatingDots from '@/components/ui/loaders/PulsatingDots';
 import SideBarHeader from './components/sidebar-header';
 import TemplateSideBarTabs from './TemplateSideBarTabs';
 import TemplateMenuViewerLayout from './template-menu-viewer-layout';
+import { TemplateProvider } from '@/contexts/TemplateContext';
 
 
 export default function TemplateEditorIndex() {
@@ -48,7 +49,7 @@ export default function TemplateEditorIndex() {
     return menuItems.reduce((acc, item) => {
       const categoryId = item?.category_id || "Uncategorized";
       if (!acc[categoryId]) acc[categoryId] = [];
-      acc[categoryId].push({...item,visible: true});
+      acc[categoryId].push({ ...item, visible: true });
       return acc;
     }, {});
 
@@ -88,30 +89,32 @@ export default function TemplateEditorIndex() {
 
   return (
 
-    <SidebarProvider CUSTOM_SIDEBAR_WIDTH='20rem' className='w-full !min-h-screen bg-gray-50/50' >
+    <TemplateProvider>
+      <SidebarProvider CUSTOM_SIDEBAR_WIDTH='20rem' className='w-full !min-h-screen bg-gray-50/50' >
 
-      <SidebarInset className={cn('h-full w-full min-w-0')} >
-        <header className="flex h-12 items-center gap-4 border-b bg-background px-6 z-10">
-          <h1 className="text-xl font-semibold">{templateName}</h1>
-        </header>
-        <TemplateMenuViewerLayout templateConfig={templateConfig} />
-      </SidebarInset>
+        <SidebarInset className={cn('h-full w-full min-w-0')} >
+          <header className="flex h-12 items-center gap-4 border-b bg-background px-6 z-10">
+            <h1 className="text-xl font-semibold">{templateName}</h1>
+          </header>
+          <TemplateMenuViewerLayout templateConfig={templateConfig}  />
+        </SidebarInset>
 
-      <SidebarComponent className='overflow-auto' side='right' >
+        <SidebarComponent className='overflow-auto' side='right' >
 
-        <SideBarHeader templateName={templateName} setTemplateName={setTemplateName} />
+          <SideBarHeader templateName={templateName} setTemplateName={setTemplateName} />
 
-        <TemplateSideBarTabs
-          categoryData={categoryData}
-          isCategoryLoading={isCategoryLoading}
-          isMenuItemLoading={isMenuItemLoading}
-          templateConfig={templateConfig}
-          setTemplateConfig={setTemplateConfig}
-          currenctCategoryItems={currenctCategoryItems}
-          setCurrenctCategoryItems={setCurrenctCategoryItems}
-        />
-        
-      </SidebarComponent>
-    </SidebarProvider>
+          <TemplateSideBarTabs
+            categoryData={categoryData}
+            isCategoryLoading={isCategoryLoading}
+            isMenuItemLoading={isMenuItemLoading}
+            templateConfig={templateConfig}
+            setTemplateConfig={setTemplateConfig}
+            currenctCategoryItems={currenctCategoryItems}
+            setCurrenctCategoryItems={setCurrenctCategoryItems}
+          />
+
+        </SidebarComponent>
+      </SidebarProvider>
+    </TemplateProvider>
   )
 }
