@@ -2,7 +2,7 @@ import { DataTableFacetedFilter } from '@/common/Table/data-table-faceted-filter
 import { Input } from '@/components/ui/input';
 import { X } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
-import { statusOptions, stockOptions } from '../utils';
+import { foodOptions, statusOptions, stockOptions } from '../utils';
 import { DataTableViewOptions } from '@/common/Table/data-table-view-options';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -110,6 +110,14 @@ export default function CommonTableToolbar({
                             column={table.getColumn("status")}
                             title="Status"
                             options={statusOptions}
+                        />
+                    )}
+
+                    {table.getColumn("veg_status") && (
+                        <DataTableFacetedFilter
+                            column={table.getColumn("veg_status")}
+                            title="Food Type"
+                            options={foodOptions}
                         />
                     )}
 

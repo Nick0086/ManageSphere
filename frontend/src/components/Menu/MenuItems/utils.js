@@ -8,6 +8,11 @@ export const stockOptions = [
     { label: 'Out Of Stock', value: 'out_of_stock' },
 ]
 
+export const foodOptions = [
+    { label: 'Veg', value: 'veg' },
+    { label: 'Non Veg', value: 'non_veg' },
+]
+
 export const  menuQueryKeyLoopUp = {
     'item' : 'menu-item'
 }

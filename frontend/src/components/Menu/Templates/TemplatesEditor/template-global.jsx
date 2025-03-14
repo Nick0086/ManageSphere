@@ -101,7 +101,7 @@ const TemplateGlobal = ({ setTemplateConfig }) => {
     resetAllHandler();
     setTemplateConfig((prevConfig) => ({
       ...prevConfig,
-      global: { ...DEFAULT_THEME },
+      global: templateDefaultValue['global'],
     }));
   };
 

@@ -19,6 +19,8 @@ export function TemplateProvider({ children }) {
 
     const [currentSection, setCurrentSection] = useState(null);
 
+    const [nameError,setNameError] = useState(null);
+
     // Reset handler that uses default values
     const resetAllHandler = () => {
         setBackgroundColor(DEFAULT_THEME.backgroundColor);
@@ -52,9 +54,11 @@ export function TemplateProvider({ children }) {
         setButtonLabelColor,
         currentSection,
         setCurrentSection,
+        nameError,
+        setNameError,
         // Methods
         resetAllHandler
-    }), [backgroundColor, sectionBackgroundColor, titleColor, cardTitleColor, cardBackgroundColor, descriptionColor, buttonBackgroundColor, buttonLabelColor, currentSection]);
+    }), [backgroundColor, sectionBackgroundColor, titleColor, cardTitleColor, cardBackgroundColor, descriptionColor, buttonBackgroundColor, buttonLabelColor, currentSection, nameError]);
 
     return (
         <TemplateContext.Provider value={value}>

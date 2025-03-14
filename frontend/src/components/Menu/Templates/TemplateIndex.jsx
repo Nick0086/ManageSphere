@@ -5,13 +5,11 @@ import { templateQueryKeyLoopUp } from './utils';
 import SquareLoader from '@/components/ui/CustomLoaders/SquarLoader';
 import { Card } from '@/components/ui/card';
 import { toastError } from '@/utils/toast-utils';
-import { Chip } from '@/components/ui/chip';
 import { Button } from '@/components/ui/button';
 import { Info, Pencil, Plus } from 'lucide-react';
 import { getCoreRowModel, getFacetedRowModel, getFacetedUniqueValues, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
 import RowDetailsModal from '@/common/Modal/RowDetailsModal';
 import CommonTable from '@/common/Table/CommonTable';
-import TemplateForm from './TemplateForm';
 import CommonTableToolbar from './components/CommonTableToolbar';
 import { useNavigate } from 'react-router';
 
@@ -22,7 +20,6 @@ export default function TemplateIndex() {
   const [columnFilters, setColumnFilters] = useState([])
   const [columnVisibility, setColumnVisibility] = useState({})
   const [selectedRow, setSelectedRow] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState({ data: null, isEdit: false, isOpen: false });
 
   const { data, isLoading, error } = useQuery({
     queryKey: [templateQueryKeyLoopUp['TEMPLATE_LIST']],
@@ -35,10 +32,6 @@ export default function TemplateIndex() {
     }
   }, [error]);
 
-  const handleOpenModal = ({ data, isOpen, isEdit }) => {
-    setSelectedCategory((prv) => ({ ...prv, data, isOpen, isEdit }))
-  };
-
   const handleClose = () => {
     setSelectedRow(null);
   };
@@ -49,7 +42,6 @@ export default function TemplateIndex() {
 
   const handleEdit = useCallback((data) => {
     navigate(`../tamplate-editor/${data?.unique_id}`)
-    // handleOpenModal({ data, isOpen: true, isEdit: true });
   }, []);
 
   const columns = useMemo(() => [
@@ -62,22 +54,6 @@ export default function TemplateIndex() {
       header: "Template Name",
       accessorKey: "name",
       colClassName: "w-4/12",
-    },
-    {
-      header: "Current Template",
-      accessorKey: "is_default",
-      HeaderClassName: "text-center",
-      colClassName: "w-2/12 text-center",
-      cell: ({ cell }) => (
-        cell?.getValue() === 1 ? (
-          <Chip className='gap-1' variant='light' color='green' radius='md' size='sm' border='none'><span>Selecrted</span></Chip>
-        ) : (
-          <Chip className='gap-1' variant='light' color='red' radius='md' size='sm' border='none'><span>Not Selected</span></Chip>
-        )
-      ),
-      filterFn: (row, id, value) => {
-        return value?.includes(row?.getValue(id));
-      },
     },
     {
       id: "actions",
@@ -136,13 +112,6 @@ export default function TemplateIndex() {
         onClose={handleClose}
         data={selectedRow || {}}
         title="Template Details"
-      />
-
-      <TemplateForm
-        open={selectedCategory?.isOpen}
-        selectedRow={selectedCategory?.data}
-        isEdit={selectedCategory?.isEdit}
-        onHide={() => handleOpenModal({ data: null, isOpen: false, isEdit: false })}
       />
 
       <div className="w-full" >

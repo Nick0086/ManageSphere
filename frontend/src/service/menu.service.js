@@ -71,6 +71,14 @@ export const getAllTemplates = async () => {
         throw handleApiError(error);
     }
 }
+export const getTemplateById = async (templateId) => {
+    try {
+        const response = await api.get(`/menu/template/${templateId}`);
+        return  response.data
+    } catch (error) {
+        throw handleApiError(error);
+    }
+}
 
 export const createTemplate = async (data) => {
     try {

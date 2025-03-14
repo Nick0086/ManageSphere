@@ -17,7 +17,7 @@ export default function MenuRoutes() {
 
                 <Route path="tamplate-editor/new" element={<TemplateProvider><TemplateEditorIndex /></TemplateProvider>} />
 
-                <Route path="tamplate-editor/:id" element={<TemplateProvider><TemplateEditorIndex /></TemplateProvider>} />
+                <Route path="tamplate-editor/:templateId" element={<TemplateProvider><TemplateEditorIndex /></TemplateProvider>} />
 
                 <Route path="categories" element={<TabsContent value="categories"><CategoriesIndex /></TabsContent>} />
 

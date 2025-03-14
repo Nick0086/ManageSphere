@@ -14,6 +14,7 @@ const columnsMapping = {
   id: "Sr No",
   name: "Item Name",
   price: "Price",
+  veg_status: "Food Type",
   category_name: "Category",
   availability: "Availability",
   status: "Status",
@@ -55,7 +56,7 @@ export default function MenuTable({
     {
       header: "Item Name",
       accessorKey: "name",
-      colClassName: "w-33/12",
+      colClassName: "w-3/12",
     },
     {
       header: "Price",
@@ -90,6 +91,22 @@ export default function MenuTable({
       header: "Category",
       accessorKey: "category_name",
       colClassName: "w-2/12",
+      filterFn: (row, id, value) => {
+        return value?.includes(row?.getValue(id));
+      },
+    },
+    {
+      header: "Food Type",
+      accessorKey: "veg_status",
+      HeaderClassName: "text-center",
+      colClassName: "w-1/12 text-center",
+      cell: ({ cell }) => (
+        cell?.getValue() === 'veg' ? (
+          <Chip className='gap-1' variant='light' color='green' radius='md' size='sm' border='none'><span>Veg</span></Chip>
+        ) : (
+          <Chip className='gap-1' variant='light' color='red' radius='md' size='sm' border='none'><span>Non Veg</span></Chip>
+        )
+      ),
       filterFn: (row, id, value) => {
         return value?.includes(row?.getValue(id));
       },
@@ -130,7 +147,7 @@ export default function MenuTable({
       id: "actions",
       header: "Actions",
       HeaderClassName: "text-center",
-      colClassName: "w-2/12 text-center",
+      colClassName: "w-1/12 text-center",
       cell: ({ _, row }) => (
         <div>
           <Button size='xs' type='button' variant="ghost" className="rounded-full text-indigo-500 hover:bg-indigo-100 hover:text-indigo-600" onClick={() => handleRowClick(row?.original)}>

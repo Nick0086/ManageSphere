@@ -37,6 +37,7 @@ const upload = multer({
     price DECIMAL(10,2) NOT NULL,
     image_details JSON,
     availability ENUM('in_stock', 'out_of_stock') DEFAULT 'in_stock',
+    veg_status ENUM('veg', 'non_veg') NOT NULL DEFAULT 'veg',
     status INT DEFAULT 1,
     position INT DEFAULT 0,  -- Drag-and-drop sorting
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -52,7 +53,6 @@ const upload = multer({
     user_id CHAR(36) NOT NULL,           -- Owner of the template (café admin)
     name VARCHAR(255) NOT NULL,          -- Template name (e.g., "Modern Coffee Shop")
     config JSON NOT NULL,                -- Template settings (colors, fonts, layout)
-    is_default BOOLEAN DEFAULT FALSE,    -- Mark as the user's default template
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(unique_id) ON DELETE CASCADE
@@ -405,7 +405,7 @@ export const addMenuItem = async (req, res) => {
         });
 
         const { unique_id: userId } = req.user;
-        const { category_id, name, description, price, availability } = req.body;
+        const { category_id, name, description, price, availability, veg_status } = req.body;
 
         // Validate inputs
         const validationError = validateMenuItemInput({ name, price, availability }, res);
@@ -452,8 +452,8 @@ export const addMenuItem = async (req, res) => {
 
         // Insert the new menu item into the database
         const insertResult = await query(
-            'INSERT INTO menu_items (unique_id, user_id, category_id, name, description, price, image_details, availability, status, position) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [menuItemId, userId, category_id, trimmedName, description || null, parseFloat(price), coverImageDetails ? JSON.stringify(coverImageDetails) : null, availability, 1, position])
+            'INSERT INTO menu_items (unique_id, user_id, category_id, name, description, price, image_details, availability, status, position, veg_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [menuItemId, userId, category_id, trimmedName, description || null, parseFloat(price), coverImageDetails ? JSON.stringify(coverImageDetails) : null, availability, 1, position, veg_status])
 
         if (insertResult?.affectedRows > 0) {
             return res.status(201).json({
@@ -490,7 +490,7 @@ export const updateMenuItem = async (req, res) => {
         });
 
         const { unique_id: userId } = req.user;
-        const { category_id, name, description, price, availability, status } = req.body;
+        const { category_id, name, description, price, availability, status, veg_status } = req.body;
         const { menuItemId } = req.params;
 
         // Validate inputs
@@ -550,8 +550,8 @@ export const updateMenuItem = async (req, res) => {
         }
 
         // Execute the update query
-        const updateQuery = `UPDATE menu_items SET category_id = ?, name = ?, description = ?, price = ?, image_details = ? , availability = ?, status = ?  WHERE unique_id = ? AND user_id = ?`;
-        const queryParams = [category_id, name, description || null, parseFloat(price), coverImageDetails ? JSON.stringify(coverImageDetails) : null, availability, status, menuItemId, userId];
+        const updateQuery = `UPDATE menu_items SET category_id = ?, name = ?, description = ?, price = ?, image_details = ? , availability = ?, status = ? , veg_status = ? WHERE unique_id = ? AND user_id = ?`;
+        const queryParams = [category_id, name, description || null, parseFloat(price), coverImageDetails ? JSON.stringify(coverImageDetails) : null, availability, status, veg_status, menuItemId, userId];
         const updateResult = await query(updateQuery, queryParams);
 
         if (updateResult?.affectedRows > 0) {
@@ -595,31 +595,54 @@ export const getAllTemplatesList = async (req, res) => {
     }
 }
 
+export const getTemplateDataById = async (req, res) => {
+    try {
+        const { unique_id: userId } = req.user;
+        const { templateId } = req.params;
+        const filterParams = [userId, templateId];
+        
+        const sql = `SELECT * FROM templates WHERE user_id = ? AND unique_id = ?`;
+        
+        const result = await query(sql, filterParams);
+        
+        return res.status(200).json({
+            success: true,
+            message: result?.length > 0 ? "Template fetched successfully" : "No template found.",
+            template: result?.[0] || null,  // Changed from templates: result || [] to template: result?.[0] || null
+            status: "success"
+        });
+    } catch (error) {
+        handleError('template.controller.js', 'getTemplateDataById', res, error, 'An unexpected error occurred while fetching template.');
+    }
+}
+
 export const createTemplate = async (req, res) => {
     try {
         const { unique_id: userId } = req.user;
-        const { name, config, is_default } = req.body;
+        const { name, config } = req.body;
 
-        const existingTemplate = await query(`SELECT name FROM templates WHERE name = ? AND user_id = ?`, [name, userId]);
+        const trimmedName = name.trim();
+
+        const existingTemplate = await query(`SELECT name FROM templates WHERE name = ? AND user_id = ?`, [trimmedName, userId]);
 
         if (existingTemplate?.length > 0) {
             return res.status(400).json({
                 status: "error",
                 code: "TEMPLATE_NAME_ALREADY_EXISTS",
-                message: `Template name ${name} already exists`
+                message: `Template name ${trimmedName} already exists`
             });
         }
 
         const templateId = createUniqueId('TEMP');
-        const queryParams = [templateId, name, JSON.stringify(config || {}), is_default, userId];
-        const sql = `INSERT INTO templates (unique_id, name, config, is_default, user_id) VALUES (?, ?, ?, ?, ?)`;
+        const queryParams = [templateId, trimmedName, JSON.stringify(config || {}), userId];
+        const sql = `INSERT INTO templates (unique_id, name, config, user_id) VALUES (?, ?, ?, ?)`;
 
         const result = await query(sql, queryParams);
 
         if (result.affectedRows > 0) {
             return res.status(201).json({
                 status: "success",
-                message: `Template ${name} created successfully`,
+                message: `Template ${trimmedName} created successfully`,
                 template: result.insertId,
                 status: "success"
             });
@@ -641,7 +664,8 @@ export const updateTemplate = async (req, res) => {
     try {
         const { unique_id: userId } = req.user;
         const { templateId } = req.params;
-        const { name, config, is_default } = req.body;
+        const { name, config } = req.body;
+        const trimmedName = name.trim();
 
         // Ensure the template exists and belongs to the user
         const existingTemplates = await query(`SELECT * FROM templates WHERE unique_id = ? AND user_id = ?`, [templateId, userId]);
@@ -654,33 +678,29 @@ export const updateTemplate = async (req, res) => {
         }
 
         // If updating the name, check that no other template has the same name
-        if (name && name !== existingTemplates[0].name) {
+        if (trimmedName && trimmedName !== existingTemplates[0].name) {
             const duplicateName = await query(
                 `SELECT unique_id FROM templates WHERE name = ? AND user_id = ? AND unique_id != ?`,
-                [name, userId, templateId]
+                [trimmedName, userId, templateId]
             );
             if (duplicateName.length > 0) {
                 return res.status(400).json({
                     status: "error",
                     code: "TEMPLATE_NAME_ALREADY_EXISTS",
-                    message: `Template name "${name}" already exists.`
+                    message: `Template name "${trimmedName}" already exists.`
                 });
             }
         }
 
-        const updateQuery = `UPDATE templates SET name = ? , config = ? , is_default = ? WHERE unique_id = ? AND user_id = ?`;
-        const updateParams = [name, JSON.stringify(config || {}), is_default, templateId, userId];
+        const updateQuery = `UPDATE templates SET name = ? , config = ? WHERE unique_id = ? AND user_id = ?`;
+        const updateParams = [trimmedName, JSON.stringify(config || {}), templateId, userId];
 
         const result = await query(updateQuery, updateParams);
-
-        if (is_default) {
-            await query(`UPDATE templates SET is_default = ? WHERE unique_id != ? AND user_id = ?`, [false, templateId, userId])
-        }
 
         if (result?.affectedRows > 0) {
             return res.status(200).json({
                 status: "success",
-                message: `Template ${name} updated successfully.`
+                message: `Template ${trimmedName} updated successfully.`
             });
         } else {
             return res.status(400).json({

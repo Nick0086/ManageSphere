@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { useInView } from 'react-intersection-observer';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { DEFAULT_SECTION_THEME } from '../utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 /* ImagePlaceholder: Renders a simple SVG placeholder. */
 const ImagePlaceholder = memo(() => (
@@ -31,6 +32,24 @@ const ImagePlaceholder = memo(() => (
     </div>
 ));
 
+
+const StatusBadge = memo(({ type }) => {
+    return (
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Chip className='gap-1 h-6 w-6 bg-white p-0 flex items-center justify-center' variant='outline' radius='md' size='sm' color={type === "veg" ? 'green' : 'red'}>
+                        <div className={cn("h-3 w-3 rounded-full", type === "veg" ? "bg-green-500" : "bg-red-500")} />
+                    </Chip>
+                </TooltipTrigger>
+                <TooltipContent className='z-50' >
+                    <p>{type === "veg" ? "Veg" : "Non Veg"}</p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+    )
+})
+
 /* OptimizedImage: Uses intersection observer and lazy loading to load images only when in view. */
 const OptimizedImage = memo(({ src, alt }) => {
     const { ref, inView } = useInView({
@@ -40,7 +59,7 @@ const OptimizedImage = memo(({ src, alt }) => {
 
     return (
         <div ref={ref} className="w-full h-56 rounded-lg overflow-hidden">
-            {inView ? (
+            {(inView && src) ? (
                 <LazyLoadImage
                     src={src}
                     alt={alt || 'Menu item'}
@@ -108,6 +127,9 @@ const MenuItem = memo(({ item, globalConfig, categoryStyle }) => {
         <div ref={ref} className="h-full">
             {inView ? (
                 <Card style={cardStyle} className="flex flex-col justify-between overflow-hidden h-full relative">
+                    <div className='absolute top-2 right-2 z-[1]' >
+                        <StatusBadge type={item?.veg_status} />
+                    </div>
                     <OptimizedImage src={item?.image_details?.url} alt={item?.name} />
                     <CardContent className="flex flex-col flex-auto justify-between p-4 px-2">
                         <div className="flex flex-col gap-1">
@@ -204,6 +226,7 @@ const CategoryAccordion = memo(({ category, globalConfig }) => {
             value={categoryId}
             className={cn('bg-card rounded-md overflow-hidden border-none px-3')}
             style={sectionStyle}
+            id={categoryId}
             ref={ref}
         >
             <AccordionTrigger className="py-3 px-2 hover:no-underline">
@@ -217,14 +240,16 @@ const CategoryAccordion = memo(({ category, globalConfig }) => {
             <AccordionContent className="pt-2">
                 {(inView || isLoaded) ? (
                     <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4">
-                        {category?.items?.filter(item => item?.visible).map(item => (
-                            <MenuItem
-                                key={item.unique_id || item.id}
-                                globalConfig={globalConfig}
-                                categoryStyle={categoryStyle}
-                                item={item}
-                            />
-                        ))}
+                        {
+                            category?.items?.filter(item => item?.visible)?.length > 0 ?  category?.items?.filter(item => item?.visible).map(item => (
+                                <MenuItem
+                                    key={item.unique_id || item.id}
+                                    globalConfig={globalConfig}
+                                    categoryStyle={categoryStyle}
+                                    item={item}
+                                />
+                            )) : <p className='flex items-center justify-center h-20 font-semibold text-lg w-full lg:col-span-3 md:col-span-2 col-span-1' >No Item Available</p>
+                        }
                     </div>
                 ) : (
                     <div className="h-20 bg-gray-100 animate-pulse rounded-md" />

@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Form } from '@/components/ui/form';
 import ReusableFormField from '@/common/Form/ReusableFormField';
 import { Button } from '@/components/ui/button';
-import { menuQueryKeyLoopUp, statusOptions, stockOptions } from './utils';
+import { foodOptions, menuQueryKeyLoopUp, statusOptions, stockOptions } from './utils';
 import { queryKeyLoopUp } from '../Categories/utils';
 import { createMenuItem, getAllCategory, updateMenuItem } from '@/service/menu.service';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -30,6 +30,7 @@ const defaultValues = {
     cover_image: '',
     category_id: null,
     availability: 'in_stock',
+    veg_status: 'veg',
     status: 1,
 };
 
@@ -49,7 +50,7 @@ const MenuItemForm = memo(({ open, onHide, isEdit, selectedRow, isDireact }) => 
     useEffect(() => {
         console.log(selectedRow)
         if ((isEdit && selectedRow) || isDireact) {
-            if(isDireact){
+            if (isDireact) {
                 setImageWarning(true)
             }
             form.reset({
@@ -59,6 +60,7 @@ const MenuItemForm = memo(({ open, onHide, isEdit, selectedRow, isDireact }) => 
                 cover_image: selectedRow.cover_image || null,
                 category_id: selectedRow.category_id || null,
                 availability: selectedRow.availability || null,
+                veg_status: selectedRow.veg_status || 'veg',
                 status: selectedRow.status?.toString() || '1',
             });
         } else {
@@ -140,7 +142,7 @@ const MenuItemForm = memo(({ open, onHide, isEdit, selectedRow, isDireact }) => 
             formData.append(key, data[key]);
         });
         if (isEdit && !isDireact) {
-            updateMenuItemMutation.mutate({menuData:formData, menuItemId:selectedRow?.unique_id})
+            updateMenuItemMutation.mutate({ menuData: formData, menuItemId: selectedRow?.unique_id })
         } else {
             createMenuItemMutation.mutate(formData)
         }
@@ -203,6 +205,18 @@ const MenuItemForm = memo(({ open, onHide, isEdit, selectedRow, isDireact }) => 
                                             required={true}
                                             label="Price"
                                             placeholder="Enter the price (e.g., 9.99)"
+                                            className="md:col-span-6 col-span-12"
+                                            disabled={createMenuItemMutation?.isPending || updateMenuItemMutation?.isPending}
+                                        />
+
+                                        <ReusableFormField
+                                            control={form.control}
+                                            type="select"
+                                            required={true}
+                                            name="veg_status"
+                                            label="Food Type"
+                                            options={foodOptions}
+                                            placeholder="Select Food Type"
                                             className="md:col-span-6 col-span-12"
                                             disabled={createMenuItemMutation?.isPending || updateMenuItemMutation?.isPending}
                                         />

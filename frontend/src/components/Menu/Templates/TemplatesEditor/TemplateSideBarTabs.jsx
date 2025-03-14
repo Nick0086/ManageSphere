@@ -47,6 +47,7 @@ export default function TemplateSideBarTabs({
                         isCategoryLoading={isCategoryLoading}
                         templateConfig={templateConfig}
                         setTemplateConfig={setTemplateConfig}
+                        handleTabChang={handleTabChange}
                     />
                 </TabsContent>
 

@@ -1,6 +1,6 @@
 import { FacetedFilter } from "@/components/ui/FacetedFilter";
 import { X } from "lucide-react";
-import { statusOptions, stockOptions } from "../utils";
+import { foodOptions, statusOptions, stockOptions } from "../utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -9,6 +9,8 @@ export default function MenuFilters({
     setSearchQuery,
     selectedStatuses,
     setSelectedStatuses,
+    selectFoodType,
+    setSelectFoodType,
     selectedCategories,
     setSelectedCategories,
     menuAvailability,
@@ -27,11 +29,13 @@ export default function MenuFilters({
                 />
                 <FacetedFilter title="Status" options={statusOptions} onFilterChange={setSelectedStatuses} value={selectedStatuses} />
 
+                <FacetedFilter title="Food Type" options={foodOptions} onFilterChange={setSelectFoodType} value={selectFoodType} />
+
                 <FacetedFilter title="Category" options={categoryOptions} onFilterChange={setSelectedCategories} value={selectedCategories} />
 
                 <FacetedFilter title="Availability" options={stockOptions} onFilterChange={setMenuAvailability} value={menuAvailability} />
 
-                {(searchQuery || selectedCategories.length || menuAvailability.length || selectedStatuses.length) ? (
+                {(searchQuery || selectedCategories.length || menuAvailability.length || selectedStatuses.length || selectFoodType?.length) ? (
                     <Button variant="ghost" onClick={resetFilters} className="text-red-500 h-8 px-1 lg:px-2 hover:bg-red-100 hover:text-red-700">
                         Reset
                         <X className="ml-2 h-4 w-4" />

@@ -5,8 +5,11 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import { useInView } from 'react-intersection-observer';
 import { Button } from '@/components/ui/button';
-import { Plus, SquarePen} from 'lucide-react';
+import { Plus, SquarePen } from 'lucide-react';
 import MenuFilters from './components/MenuCardFilters';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 // Placeholder component for images during loading
 const ImagePlaceholder = memo(() => (
@@ -43,6 +46,24 @@ const OptimizedImage = memo(({ src, alt }) => {
   );
 });
 
+
+function StatusBadge({ type }) {
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Chip className='gap-1 h-6 w-6 bg-white p-0 flex items-center justify-center' variant='outline' radius='md' size='sm' color={type === "veg" ? 'green' : 'red'}>
+            <div className={cn("h-3 w-3 rounded-full", type === "veg" ? "bg-green-500" : "bg-red-500")} />
+          </Chip>
+        </TooltipTrigger>
+        <TooltipContent className='z-50' >
+          <p>{type === "veg" ? "Veg" : "Non Veg"}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
+}
+
 // Individual menu item card with intersection observer
 const MenuItem = memo(({ item, setIsModalOpen }) => {
   const { ref, inView } = useInView({
@@ -55,6 +76,9 @@ const MenuItem = memo(({ item, setIsModalOpen }) => {
     <div ref={ref} className="h-full">
       {inView ? (
         <Card className="flex flex-col justify-between overflow-hidden h-full relative ">
+          <div className='absolute top-2 left-2 z-[1] p-1' >
+            <StatusBadge type={item?.veg_status} />
+          </div>
           <Button onClick={() => { setIsModalOpen((prv) => ({ ...prv, isOpen: true, isEdit: true, data: item, isDirect: false })) }} className='absolute top-2 right-2 z-[1] p-1' variant="primary" size="xs">
             <SquarePen size={16} />
           </Button>
@@ -66,11 +90,20 @@ const MenuItem = memo(({ item, setIsModalOpen }) => {
             </div>
             <div className="flex items-center justify-between mt-2">
               <span className="text-base font-bold">${item?.price}</span>
+              <div className='flex items-center gap-1' >
               {item.availability === 'in_stock' ? (
                 <Chip variant="light" color="green" radius="md" size="xs">In Stock</Chip>
               ) : (
                 <Chip variant="light" color="red" radius="md" size="xs">Out of Stock</Chip>
               )}
+              <Separator orientation='vertical' className='h-5 w-0.5' />
+              {item.status ? (
+                <Chip variant="light" color="green" radius="md" size="xs">Active</Chip>
+              ) : (
+                <Chip variant="light" color="red" radius="md" size="xs">Inactive</Chip>
+              )}
+              </div>
+              
             </div>
           </CardContent>
         </Card>
@@ -91,6 +124,7 @@ export default function MenuCard({ data, isLoading, setIsModalOpen, categoryOpti
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [menuAvailability, setMenuAvailability] = useState([]);
   const [selectedStatuses, setSelectedStatuses] = useState([]);
+  const [selectFoodType, setSelectFoodType] = useState([]);
 
   // Observer for the infinite scroll trigger
   const { ref, inView } = useInView({ threshold: 0, rootMargin: "300px 0px" });
@@ -107,8 +141,9 @@ export default function MenuCard({ data, isLoading, setIsModalOpen, categoryOpti
     const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(item.status);
     const matchesAvailability = menuAvailability.length === 0 || menuAvailability.includes(item.availability);
     const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(item.category_name);
+    const matchFoodType = selectFoodType.length === 0 || selectFoodType.includes(item.veg_status);
 
-    return matchesSearch && matchesStatus && matchesAvailability && matchesCategory;
+    return matchesSearch && matchesStatus && matchesAvailability && matchesCategory && matchFoodType;
   });
 
 
@@ -135,6 +170,7 @@ export default function MenuCard({ data, isLoading, setIsModalOpen, categoryOpti
     setSelectedStatuses([]);
     setMenuAvailability([]);
     setSelectedCategories([]);
+    setSelectFoodType([])
   };
 
   if (isLoading) {
@@ -142,6 +178,7 @@ export default function MenuCard({ data, isLoading, setIsModalOpen, categoryOpti
       <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4">
         {Array.from({ length: 6 }).map((_, index) => (
           <Card key={`loading-${index}`} className="flex flex-col justify-between overflow-hidden">
+
             <div className="w-full h-64 bg-gray-200 rounded-lg animate-pulse" />
             <CardContent className="p-4 pt-0">
               <div className="h-6 w-3/4 bg-gray-200 rounded animate-pulse mb-2"></div>
@@ -157,7 +194,7 @@ export default function MenuCard({ data, isLoading, setIsModalOpen, categoryOpti
     );
   }
 
-  if (menuItems.length === 0) return<div className='flex items-center justify-center w-full h-[60dvh]' ><p className='text-xl font-semibold text-primary' >No menu items found.</p></div> ;
+  if (menuItems.length === 0) return <div className='flex items-center justify-center w-full h-[60dvh]' ><p className='text-xl font-semibold text-primary' >No menu items found.</p></div>;
 
   return (
     <>
@@ -172,6 +209,8 @@ export default function MenuCard({ data, isLoading, setIsModalOpen, categoryOpti
         setMenuAvailability={setMenuAvailability}
         categoryOptions={categoryOptions}
         resetFilters={resetFilters}
+        setSelectFoodType={setSelectFoodType}
+        selectFoodType={selectFoodType}
       />
 
       {Object.entries(groupedItems).map(([category, items]) => (

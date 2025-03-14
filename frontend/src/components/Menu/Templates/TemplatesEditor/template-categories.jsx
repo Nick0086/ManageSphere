@@ -19,6 +19,7 @@ import { Eye, EyeOff, GripVertical, Pencil } from 'lucide-react'
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { CSS } from '@dnd-kit/utilities'
 import SlackLoader from '@/components/ui/CustomLoaders/SlackLoader'
+import { useTemplate } from '@/contexts/TemplateContext'
 
 /**
  * Sortable item component representing a single category
@@ -92,8 +93,10 @@ function SortableCategoryItem({ category, onToggleVisibility, onEdit }) {
 export default function TemplateCategories({
   isCategoryLoading,
   templateConfig,
-  setTemplateConfig
+  setTemplateConfig,
+  handleTabChang
 }) {
+  const {setCurrentSection} = useTemplate()
   // Extract categories from template config with fallback to empty array
   const initialCategories = templateConfig?.categories || [];
   
@@ -140,12 +143,14 @@ export default function TemplateCategories({
   // Edit category handler - memoized to prevent recreation on each render
   const handleEditCategory = useCallback((uniqueId) => {
     // Implement your edit logic here
-    console.log(`Editing category with ID: ${uniqueId}`);
+    setCurrentSection(uniqueId)
+    handleTabChang('Styling');
   }, []);
 
   // Handle the end of a drag operation
   const handleCategoriesDragEnd = useCallback((event) => {
     const { active, over } = event;
+    
 
     // Skip if not dropped on a valid target
     if (!over) return;
