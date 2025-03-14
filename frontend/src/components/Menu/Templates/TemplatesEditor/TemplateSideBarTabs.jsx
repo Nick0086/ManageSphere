@@ -61,7 +61,14 @@ export default function TemplateSideBarTabs({
                     />
                 </TabsContent>
 
-                <TabsContent value='Styling' ><TemplateStyling /></TabsContent>
+                <TabsContent value='Styling' >
+                    <TemplateStyling
+                        isLoading={isCategoryLoading || isMenuItemLoading}
+                        categoryData={categoryData}
+                        templateConfig={templateConfig}
+                        setTemplateConfig={setTemplateConfig}
+                    />
+                </TabsContent>
             </Tabs>
         </div>
     )

@@ -16,6 +16,16 @@ export const DEFAULT_THEME = {
     buttonLabelColor: '#ffffff'
 };
 
+export const DEFAULT_SECTION_THEME = {
+    "section_background_color": DEFAULT_THEME.sectionBackgroundColor,
+    "title_color": DEFAULT_THEME.titleColor,
+    "card_title_color": DEFAULT_THEME.cardTitleColor,
+    "card_background_color": DEFAULT_THEME.cardBackgroundColor,
+    "description_color": DEFAULT_THEME.descriptionColor,
+    "button_label_color": DEFAULT_THEME.buttonBackgroundColor,
+    "button_background_color": DEFAULT_THEME.buttonLabelColor
+}
+
 export const templateDefaultValue = {
     "global": {
         "background_color": DEFAULT_THEME.backgroundColor,

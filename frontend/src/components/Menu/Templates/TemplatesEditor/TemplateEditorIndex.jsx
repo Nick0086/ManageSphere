@@ -8,16 +8,17 @@ import {
 import { cn } from '@/lib/utils';
 import { toastError } from '@/utils/toast-utils';
 import { getAllCategory, getAllMenuItems } from '@/service/menu.service';
-import { templateDefaultValue, templateQueryKeyLoopUp } from '../utils';
+import { DEFAULT_SECTION_THEME, templateDefaultValue, templateQueryKeyLoopUp } from '../utils';
 import PulsatingDots from '@/components/ui/loaders/PulsatingDots';
 import SideBarHeader from './components/sidebar-header';
 import TemplateSideBarTabs from './TemplateSideBarTabs';
 import TemplateMenuViewerLayout from './template-menu-viewer-layout';
-import { TemplateProvider } from '@/contexts/TemplateContext';
+import {  useTemplate } from '@/contexts/TemplateContext';
 
 
 export default function TemplateEditorIndex() {
 
+  const { setCurrentSection } = useTemplate();
   const [templateConfig, setTemplateConfig] = useState(templateDefaultValue);
   const [templateName, setTemplateName] = useState('Default Template');
   const [currenctCategoryItems, setCurrenctCategoryItems] = useState(null);
@@ -65,6 +66,7 @@ export default function TemplateEditorIndex() {
         name: category?.name,
         status: category?.status,
         visible: true,
+        style: DEFAULT_SECTION_THEME,
         items: menuItemsByCategory[category.unique_id] || []
       }));
   }, [categoryData, menuItemsByCategory]);
@@ -72,6 +74,7 @@ export default function TemplateEditorIndex() {
   useEffect(() => {
     if (processedCategories.length > 0) {
       setCurrenctCategoryItems(processedCategories[0]?.unique_id || null)
+      setCurrentSection(processedCategories[0]?.unique_id || null)
       setTemplateConfig((prev) => ({
         ...prev,
         categories: processedCategories
@@ -88,15 +91,13 @@ export default function TemplateEditorIndex() {
   }
 
   return (
-
-    <TemplateProvider>
-      <SidebarProvider CUSTOM_SIDEBAR_WIDTH='20rem' className='w-full !min-h-screen bg-gray-50/50' >
+      <SidebarProvider CUSTOM_SIDEBAR_WIDTH='20rem' className='w-full !min-h-[100dvh] bg-gray-50/50' >
 
         <SidebarInset className={cn('h-full w-full min-w-0')} >
           <header className="flex h-12 items-center gap-4 border-b bg-background px-6 z-10">
             <h1 className="text-xl font-semibold">{templateName}</h1>
           </header>
-          <TemplateMenuViewerLayout templateConfig={templateConfig}  />
+          <TemplateMenuViewerLayout templateConfig={templateConfig} />
         </SidebarInset>
 
         <SidebarComponent className='overflow-auto' side='right' >
@@ -115,6 +116,5 @@ export default function TemplateEditorIndex() {
 
         </SidebarComponent>
       </SidebarProvider>
-    </TemplateProvider>
   )
 }
