@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 const RowDetailsModal = ({ isOpen, onClose, data, style, title, isLoading }) => {
     return (
         <Dialog open={isOpen} onOpenChange={onClose} >
-            <DialogContent className="sm:tw-max-w-md" style={{ fontFamily: 'Nunito, "Segoe UI", arial' }}>
+            <DialogContent className="sm:max-w-md" style={{ fontFamily: 'Nunito, "Segoe UI", arial' }}>
                 {
                     isOpen && (
                         <>

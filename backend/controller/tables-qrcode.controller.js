@@ -28,7 +28,7 @@ export const getAllTables = async (req, res) => {
         return res.status(200).json({
             status: "success",
             message: "Tables retrieved successfully.",
-            data: tables
+            qrCodes: tables
         });
     } catch (error) {
         handleError('tables.controller.js', 'getAllTables', res, error, 'An unexpected error occurred while retrieving tables.');
@@ -67,14 +67,14 @@ export const getTableById = async (req, res) => {
 export const createTables = async (req, res) => {
     try {
         const { unique_id: userId } = req.user;
-        const { table_number: tableNumberInput, template_id: templateId } = req.body;
+        const { tableNumbers: tableNumberInput, templateId: templateId } = req.body;
 
         // Validate that the template exists for this user
         const template = await query(
             'SELECT * FROM templates WHERE unique_id = ? AND user_id = ?',
             [templateId, userId]
         );
-        if (!template.length) {
+        if (!template?.length) {
             return res.status(400).json({
                 status: "error",
                 code: "INVALID_TEMPLATE",
@@ -100,14 +100,15 @@ export const createTables = async (req, res) => {
                 [trimmedTableNumber, templateId, userId]
             );
 
-            if (existing.length > 0) {
+            if (!!existing) {
                 existingTables.push(trimmedTableNumber);
             } else {
                 const uniqueId = createUniqueId('TWQR'); // Use your unique ID generator
-                const [result] = await query(
+                const result = await query(
                     'INSERT INTO tables (unique_id, user_id, template_id, table_number, status) VALUES (?, ?, ?, ?, ?)',
                     [uniqueId, userId, templateId, trimmedTableNumber, 1]
                 );
+
 
                 if (result.affectedRows > 0) {
                     addedTables.push(trimmedTableNumber);
@@ -120,13 +121,13 @@ export const createTables = async (req, res) => {
         // Build a comprehensive return message
         let message = "Tables processed successfully.";
         if (existingTables.length) {
-            message += ` ${existingTables.length} table(s) already exist: ${existingTables.join(', ')}.`;
+            message += ` ${existingTables.join(', ')} already exist.`;
         }
         if (addedTables.length) {
-            message += ` ${addedTables.length} table(s) added successfully: ${addedTables.join(', ')}.`;
+            message += ` ${addedTables.join(', ')} added successfully .`;
         }
         if (failedTables.length) {
-            message += ` ${failedTables.length} table(s) failed to add: ${failedTables.join(', ')}.`;
+            message += ` ${failedTables.join(', ')} failed to add.`;
         }
 
         return res.status(200).json({
@@ -149,7 +150,7 @@ export const updateTable = async (req, res) => {
     try {
         const { unique_id: userId } = req.user;
         const { tableId } = req.params;
-        const { table_number: tableNumberInput, template_id: templateId } = req.body;
+        const { tableNumbers: tableNumberInput, templateId: templateId } = req.body;
         const trimmedTableNumber = tableNumberInput.trim();
 
         // Validate that the template exists for this user

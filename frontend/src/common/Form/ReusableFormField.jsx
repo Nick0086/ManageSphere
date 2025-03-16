@@ -14,6 +14,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 import EnhancedAttachmentInput from '@/components/ui/EnhancedAttachmentInput';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import { TagInput } from '@/components/ui/tag/tag-input';
 
 
 const ReusableFormField = ({
@@ -42,7 +43,9 @@ const ReusableFormField = ({
     radioLabelClassName,
     radioGroupBodyClassName,
     coustomValue,
-    textAreaClassName=''
+    textAreaClassName='',
+    activeTagIndex,
+    setActiveTagIndex
 }) => {
 
     const [showPassword, setShowPassword] = useState(false);
@@ -138,6 +141,27 @@ const ReusableFormField = ({
                             )
                             onValueChange?.(value);
                         }}
+                    />
+                );
+            case 'tagInput':
+                return (
+                    <TagInput   
+                        placeholder={placeholder}
+                        includeTagsInInput
+                        activeTagIndex={activeTagIndex}
+                        setActiveTagIndex={setActiveTagIndex}
+                        tags={
+                            field.value?.map((tag) => ({
+                                text: tag,
+                                id: tag,
+                            })) || []
+                        }
+                        setTags={(tags) => {
+                            field.onChange(tags?.map((tag) => tag?.text));
+                            onValueChange?.(tags?.map((tag) => tag?.text));
+                        }}
+                        disabled={disabled || isLoading || readonly}
+                        {...inputProps}
                     />
                 );
             case 'PhoneInput':

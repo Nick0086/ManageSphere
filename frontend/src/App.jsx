@@ -9,10 +9,12 @@ import ResetPassword from './components/Authentication/ResetPassword';
 import Sidebar from './components/Sidebar/Sidebar';
 import Dashboard from './components/Dashboard/Dashboard';
 import MenuRoutes from './routes/MenuRoutes';
+import QrCodeManagerIndex from './components/Table-QrCode/table-qrcodeIndex';
 
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
 import 'react-image-crop/dist/ReactCrop.css';
+
 
 
 function App() {
@@ -36,6 +38,7 @@ function App() {
                 <Route path='' element={<div>👋 Hyy</div>} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/menu-management/*" element={<MenuRoutes />} />
+                <Route path="/qr-management" element={<QrCodeManagerIndex />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
             </Route>

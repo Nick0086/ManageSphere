@@ -1,6 +1,6 @@
 import React from 'react'
 import { Sidebar as SidebarComponent, SidebarContent, SidebarGroup, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '../ui/sidebar'
-import { ListTodo } from 'lucide-react'
+import { ListTodo, ScanQrCode } from 'lucide-react'
 import { Separator } from '../ui/separator'
 import { Link, Outlet, useLocation } from 'react-router'
 import { UserNav } from '../ui/Layouts/user-nav'
@@ -21,6 +21,12 @@ const sideBarData = [
         title: 'Menu ',
         icon: <Menu />,
         link: '/menu-management',
+        isCollapsible: false,
+    },
+    {
+        title: 'Qr Code',
+        icon:<ScanQrCode />,
+        link: '/qr-management',
         isCollapsible: false,
     }
 ]
@@ -52,7 +58,7 @@ export default function Sidebar({
                 <SidebarHeader>
                     <SidebarMenu>
                         <SidebarMenuItem>
-                            <Link className="flex justify-center items-center gap-2 my-2 w-full tw-no-underline tw-text-inherit" to={'/'}>
+                            <Link className="flex justify-center items-center gap-2 my-2 w-full no-underline text-inherit" to={'/'}>
                                 <CafeIcon />
                                 <b className="text-lg tracking-[0.1em] group-data-[collapsible=icon]:hidden">CaféBite</b>
                             </Link>
@@ -72,7 +78,7 @@ export default function Sidebar({
                                                 isActive={isActive(item.link)}
                                                 tooltip={item.title}
                                             >
-                                                <Link className="tw-no-underline tw-text-inherit" to={item.link}>
+                                                <Link className="no-underline text-inherit" to={item.link}>
                                                     {item?.icon && item.icon}
                                                     <span>{item.title}</span>
                                                 </Link>
