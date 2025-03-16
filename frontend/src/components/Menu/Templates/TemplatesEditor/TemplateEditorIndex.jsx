@@ -22,11 +22,19 @@ export default function TemplateEditorIndex() {
 
   const queryClient = useQueryClient();
   const { templateId } = useParams();
-  const { setCurrentSection, setNameError, setBackgroundColor, setSectionBackgroundColor, setTitleColor, setCardTitleColor, setCardBackgroundColor, setDescriptionColor ,setButtonBackgroundColor, setButtonLabelColor} = useTemplate();
+  const {currentSection, setCurrentSection, setNameError, setBackgroundColor, setSectionBackgroundColor, setTitleColor, setCardTitleColor, setCardBackgroundColor, setDescriptionColor, setButtonBackgroundColor, setButtonLabelColor } = useTemplate();
 
   const [templateConfig, setTemplateConfig] = useState(templateDefaultValue);
   const [templateName, setTemplateName] = useState('Default Template');
   const [currenctCategoryItems, setCurrenctCategoryItems] = useState(null);
+
+  const visibleHandler = (value) => {
+    if(value === false){
+      return false;
+    }
+
+    return true
+  }
 
 
   const { data: templateData, isLoading, error, isError } = useQuery({
@@ -122,7 +130,7 @@ export default function TemplateEditorIndex() {
       unique_id: category.unique_id,
       name: category.name,
       status: category.status,
-      visible: true,
+      visible: visibleHandler(category?.visible),
       style: category.style || DEFAULT_SECTION_THEME,
       items: menuItemsByCategory[category.unique_id] || []
     }));
@@ -130,8 +138,8 @@ export default function TemplateEditorIndex() {
 
   useEffect(() => {
     if (processedCategories.length > 0) {
-      setCurrenctCategoryItems(processedCategories[0]?.unique_id || null)
-      setCurrentSection(processedCategories[0]?.unique_id || null)
+      setCurrenctCategoryItems(currenctCategoryItems || processedCategories[0]?.unique_id || null)
+      setCurrentSection(currentSection || processedCategories[0]?.unique_id || null)
       setTemplateConfig((prev) => ({
         ...prev,
         categories: processedCategories

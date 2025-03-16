@@ -579,7 +579,7 @@ export const getAllTemplatesList = async (req, res) => {
         const { unique_id: userId } = req.user;
         const filterParams = [userId];
 
-        const sql = `SELECT * FROM templates WHERE user_id = ?`;
+        const sql = `SELECT id, unique_id, user_id, name, created_at, updated_at FROM templates WHERE user_id = ?`;
 
         const result = await query(sql, filterParams);
 
