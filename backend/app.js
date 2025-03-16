@@ -7,6 +7,7 @@ import { rateLimit } from 'express-rate-limit'
 import userRoutes from './routes/user.routes.js'
 import authRoutes from './routes/auth.routes.js'
 import menuRoutes from './routes/menu.routes.js'
+import tableRoutes from './routes/tables-qrcode.routes.js'
 
 const limiter = rateLimit({
     windowMs: 5 * 60 * 1000, // 5 minutes
@@ -42,6 +43,9 @@ app.use('/v1/auth', authRoutes);
 
 // menu api
 app.use('/v1/menu', menuRoutes);
+
+// table-qr code api
+app.use('/v1/tables', tableRoutes);
 
 const PORT = process.env.PORT || 3002;
 
