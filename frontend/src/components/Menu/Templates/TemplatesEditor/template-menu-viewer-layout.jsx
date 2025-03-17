@@ -17,6 +17,7 @@ import { useInView } from 'react-intersection-observer';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { DEFAULT_SECTION_THEME } from '../utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 
 /* ImagePlaceholder: Renders a simple SVG placeholder. */
 const ImagePlaceholder = memo(() => (
@@ -123,6 +124,32 @@ const MenuItem = memo(({ item, globalConfig, categoryStyle }) => {
         return {};
     }, [globalConfig?.description_color, categoryStyle?.description_color]);
 
+    const buttonBackgroundStyle = useMemo(() => {
+        if (
+            categoryStyle?.button_background_color &&
+            DEFAULT_SECTION_THEME?.button_background_color !== categoryStyle?.button_background_color
+        ) {
+            return { backgroundColor: categoryStyle.button_background_color };
+        }
+        if (globalConfig?.button_background_color) {
+            return { backgroundColor: globalConfig.button_background_color };
+        }
+        return {};
+    }, [globalConfig?.button_background_color, categoryStyle?.button_background_color]);
+
+    const buttonLabelStyle = useMemo(() => {
+        if (
+            categoryStyle?.button_label_color &&
+            DEFAULT_SECTION_THEME?.button_label_color !== categoryStyle?.button_label_color
+        ) {
+            return { color: categoryStyle.button_label_color };
+        }
+        if (globalConfig?.button_label_color) {
+            return { color: globalConfig.button_label_color };
+        }
+        return {};
+    }, [globalConfig?.button_label_color, categoryStyle?.button_label_color]);
+
     return (
         <div ref={ref} className="h-full">
             {inView ? (
@@ -141,10 +168,13 @@ const MenuItem = memo(({ item, globalConfig, categoryStyle }) => {
                             </CardDescription>
                         </div>
                         <div className="flex items-center justify-between mt-2">
-                            <span style={titleStyle} className="text-base font-bold">
+                            <span style={titleStyle}  className="text-base font-bold">
                                 ${item?.price}
                             </span>
-                            {item.availability === 'in_stock' ? (
+                            <Button disabled={!(item.availability === 'in_stock')} style={buttonBackgroundStyle} variant='primary'  size='sm' > 
+                                <p style={buttonLabelStyle} > {item.availability === 'in_stock' ? "Order" : "Out of Stock"}</p>
+                            </Button>
+                            {/* {item.availability === 'in_stock' ? (
                                 <Chip variant="light" color="green" radius="md" size="xs">
                                     In Stock
                                 </Chip>
@@ -152,7 +182,7 @@ const MenuItem = memo(({ item, globalConfig, categoryStyle }) => {
                                 <Chip variant="light" color="red" radius="md" size="xs">
                                     Out of Stock
                                 </Chip>
-                            )}
+                            )} */}
                         </div>
                     </CardContent>
                 </Card>

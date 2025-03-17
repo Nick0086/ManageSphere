@@ -1,6 +1,6 @@
 import React from 'react'
 import { Sidebar as SidebarComponent, SidebarContent, SidebarGroup, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '../ui/sidebar'
-import { ListTodo, ScanQrCode } from 'lucide-react'
+import { ClipboardList, ListTodo, ReceiptText, ScanQrCode } from 'lucide-react'
 import { Separator } from '../ui/separator'
 import { Link, Outlet, useLocation } from 'react-router'
 import { UserNav } from '../ui/Layouts/user-nav'
@@ -28,7 +28,19 @@ const sideBarData = [
         icon:<ScanQrCode />,
         link: '/qr-management',
         isCollapsible: false,
-    }
+    },
+    {
+        title: 'Orders',
+        icon:<ClipboardList />,
+        link: '/order-management',
+        isCollapsible: false,
+    },
+    {
+        title: 'Invoice',
+        icon:<ReceiptText />,
+        link: '/invoice',
+        isCollapsible: false,
+    },
 ]
 
 

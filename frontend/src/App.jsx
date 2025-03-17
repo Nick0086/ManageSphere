@@ -14,6 +14,7 @@ import QrCodeManagerIndex from './components/Table-QrCode/table-qrcodeIndex';
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
 import 'react-image-crop/dist/ReactCrop.css';
+import OrdersIndex from './components/Orders/OrdersIndex';
 
 
 
@@ -39,6 +40,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/menu-management/*" element={<MenuRoutes />} />
                 <Route path="/qr-management" element={<QrCodeManagerIndex />} />
+                <Route path="/order-management" element={<OrdersIndex />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
             </Route>

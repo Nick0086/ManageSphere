@@ -22,8 +22,8 @@ export const DEFAULT_SECTION_THEME = {
     "card_title_color": DEFAULT_THEME.cardTitleColor,
     "card_background_color": DEFAULT_THEME.cardBackgroundColor,
     "description_color": DEFAULT_THEME.descriptionColor,
-    "button_label_color": DEFAULT_THEME.buttonBackgroundColor,
-    "button_background_color": DEFAULT_THEME.buttonLabelColor
+    "button_label_color": DEFAULT_THEME.buttonLabelColor,
+    "button_background_color": DEFAULT_THEME.buttonBackgroundColor
 }
 
 export const templateDefaultValue = {
@@ -34,8 +34,8 @@ export const templateDefaultValue = {
         "card_title_color": DEFAULT_THEME.cardTitleColor,
         "card_background_color": DEFAULT_THEME.cardBackgroundColor,
         "description_color": DEFAULT_THEME.descriptionColor,
-        "button_label_color": DEFAULT_THEME.buttonBackgroundColor,
-        "button_background_color": DEFAULT_THEME.buttonLabelColor
+        "button_label_color": DEFAULT_THEME.buttonLabelColor,
+        "button_background_color": DEFAULT_THEME.buttonBackgroundColor
     },
     "categories": [],
     "styling": {

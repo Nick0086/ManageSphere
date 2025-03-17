@@ -8,6 +8,7 @@ import { RotateCcw } from 'lucide-react';
 import SlackLoader from '@/components/ui/CustomLoaders/SlackLoader';
 import { useTemplate } from '@/contexts/TemplateContext';
 import { templateDefaultValue, DEFAULT_SECTION_THEME } from '../utils';
+import { Separator } from '@/components/ui/separator';
 
 const ColorPicker = ({ label, currentColor, onColorChange, colorKey }) => {
   const defaultColors = templateDefaultValue.global;
@@ -149,8 +150,8 @@ const TemplateStyling = ({ categoryData, templateConfig, isLoading, setTemplateC
       </div>
 
       {/* Color Settings */}
-      <div className="p-4 pt-2 space-y-2">
-        <div>
+      <div className="py-4 px-0 pt-2 space-y-2">
+        <div className='' >
           <div className="flex items-center justify-between">
             <h5 className="text-lg font-medium px-4 pb-2">Background & Colors</h5>
             <ResetButton onClick={resetAllStyles} tooltipText="Reset All" />
@@ -158,6 +159,26 @@ const TemplateStyling = ({ categoryData, templateConfig, isLoading, setTemplateC
 
           <div className="space-y-4 px-4 pb-2">
             {colorSettings.map(({ label, key }) => (
+              <ColorPicker
+                key={key}
+                label={label}
+                currentColor={currentCategory?.style?.[key] || DEFAULT_SECTION_THEME?.[key]}
+                onColorChange={updateStyleConfig}
+                colorKey={key}
+              />
+            ))}
+          </div>
+        </div>
+
+        <Separator />
+
+        <div>
+          <div className="flex items-center justify-between">
+            <h5 className="text-lg font-medium px-4 pb-2">Button Colors</h5>
+          </div>
+
+          <div className="space-y-4 px-4 pb-2">
+            {buttonColors.map(({ label, key }) => (
               <ColorPicker
                 key={key}
                 label={label}
