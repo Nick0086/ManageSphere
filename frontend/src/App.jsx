@@ -36,7 +36,7 @@ function App() {
     <>
 
       {
-         (!isRestrictedRoute && !isPublicRoute) && (
+        (!isRestrictedRoute && !isPublicRoute) && (
           <Routes>
             <Route path="/" element={<PrivateRoutes />}>
               <Route path='' element={<Sidebar isfullScreen={isfullScreen} />}>

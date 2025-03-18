@@ -3,6 +3,6 @@ import { getMenuForCustomerByTableId } from '../controller/customer-menu.control
 
 const router = express.Router();
 
-router.get('/:tableId/:userId', getMenuForCustomerByTableId);
+router.get('/:userId/:tableId', getMenuForCustomerByTableId);
 
 export default router;
