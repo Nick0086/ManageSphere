@@ -8,6 +8,7 @@ import userRoutes from './routes/user.routes.js'
 import authRoutes from './routes/auth.routes.js'
 import menuRoutes from './routes/menu.routes.js'
 import tableRoutes from './routes/tables-qrcode.routes.js'
+import customerMenuRoutes from './routes/customer-menu.routes.js'
 
 const limiter = rateLimit({
     windowMs: 5 * 60 * 1000, // 5 minutes
@@ -17,7 +18,7 @@ const limiter = rateLimit({
 const app = express();
 
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173', 'http://localhost:8080', 'http://localhost:5174','http://192.168.1.8:5173',process.env.FRONTEND_DOMAIN],
+    origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173', 'http://localhost:8080', 'http://localhost:5174','http://192.168.1.10:5173',process.env.FRONTEND_DOMAIN],
     credentials: true
 }))
 
@@ -46,6 +47,9 @@ app.use('/v1/menu', menuRoutes);
 
 // table-qr code api
 app.use('/v1/tables', tableRoutes);
+
+
+app.use('/v1/customer-menu', customerMenuRoutes);
 
 const PORT = process.env.PORT || 3002;
 

@@ -15,6 +15,7 @@ import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
 import 'react-image-crop/dist/ReactCrop.css';
 import OrdersIndex from './components/Orders/OrdersIndex';
+import CustomerMenuIndex from './components/CustomerMenu/CustomerMenuIndex';
 
 
 
@@ -23,16 +24,19 @@ function App() {
   const location = useLocation();
   const path = location.pathname.split('/');
   const restrictedRoutes = ['login', 'register-user', 'reset-password'];
-  const fullScreen = ['tamplate-editor']
+  const fullScreen = ['tamplate-editor'];
+  const publicRoutes = ['menu']; // Add this for customer routes
+
   const isRestrictedRoute = restrictedRoutes.some(route => path.includes(route));
   const isfullScreen = fullScreen?.some(route => path.includes(route));
-  // console.log({ isLoginRoute }, location.pathname)
+  const isPublicRoute = publicRoutes.some(route => path.includes(route));
+
 
   return (
     <>
 
       {
-        !isRestrictedRoute && (
+         (!isRestrictedRoute && !isPublicRoute) && (
           <Routes>
             <Route path="/" element={<PrivateRoutes />}>
               <Route path='' element={<Sidebar isfullScreen={isfullScreen} />}>
@@ -47,6 +51,14 @@ function App() {
           </Routes>
         )
       }
+
+      {/* Public Customer Routes */}
+      {isPublicRoute && (
+        <Routes>
+          <Route path="/menu/:restaurantId/:tableId" element={<CustomerMenuIndex />} />
+          <Route path="/menu/*" element={<p>No Accesss</p>} />
+        </Routes>
+      )}
 
       {
         isRestrictedRoute && (

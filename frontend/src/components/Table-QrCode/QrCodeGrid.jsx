@@ -83,13 +83,13 @@ const QrCodeGrid = ({
                         <div className='border border-primary rounded-lg p-4 w-full flex justify-center'>
                             <QRCodeCanvas
                                 data-qrid={qr.unique_id}
-                                value={`http://192.168.1.8:5173/menu-management/tamplate`}
+                                value={`http://192.168.1.8:5173/menu/${qr.user_id}/${qr.unique_id}`}
                                 size={160}
                             />
                         </div>
 
                         <Link
-                            to={`/menu/${qr.template_id}/${qr.unique_id}`}
+                            to={`/menu/${qr.user_id}/${qr.unique_id}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{ width: '100%', textDecoration: 'none' }}
