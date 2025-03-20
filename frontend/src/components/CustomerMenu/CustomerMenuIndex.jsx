@@ -12,6 +12,8 @@ import { ErrorState } from '../ui/error';
 import SlackLoader from '../ui/CustomLoaders/SlackLoader';
 import { DEFAULT_SECTION_THEME } from '../Menu/Templates/utils';
 import CustomerMenuViewer from './CustomerMenuViewer';
+import { OrderProvider } from '@/contexts/order-management-context';
+import { OrderDrawer } from './OrderDrawer';
 
 export default function CustomerMenuIndex() {
     const { restaurantId, tableId } = useParams();
@@ -136,8 +138,12 @@ export default function CustomerMenuIndex() {
     }
 
     return (
-        <div>
+        <OrderProvider>
+            <div className="relative">
             <CustomerMenuViewer menuConfig={derivedTemplateConfig} />
-        </div>
+            <OrderDrawer />
+            </div>
+        </OrderProvider>
+
     )
 }

@@ -7,7 +7,11 @@ import { ImagePlaceholder } from '../ui/Iimage-placeholder';
 import { AppTooltip } from '@/common/AppTooltip';
 import { Chip } from '../ui/chip';
 import { cn } from '@/lib/utils';
+import { PlusCircle, AlertCircle, Plus, Minus } from 'lucide-react';
+import { useOrder } from '@/contexts/order-management-context';
 import { useMenuStyles } from './utils';
+import { Badge } from '../ui/badge';
+
 
 const StatusBadge = memo(({ type }) => {
     return (
@@ -52,21 +56,48 @@ const MenuItem = memo(({ item, styles }) => {
         rootMargin: '100px 0px',
     });
 
+    const { addItem, removeItem, orderItems } = useOrder();
+
+    const isInStock = item.availability === 'in_stock';
+    const itemInOrder = orderItems.find(orderItem => orderItem.id === item.id || orderItem.unique_id === item.unique_id);
+
+
+    const handleAddToOrder = () => {
+        if (isInStock) {
+            addItem({
+                id: item.id || item.unique_id,
+                name: item.name,
+                price: parseFloat(item.price),
+                veg_status: item.veg_status,
+                image: item.image_details?.url
+            });
+        }
+    };
 
     return (
         <div ref={ref} className="h-full">
             {inView ? (
-                <Card style={styles?.cardStyle} className="flex flex-col justify-between overflow-hidden h-full relative">
+                <Card style={styles?.cardStyle} className="flex flex-col justify-between overflow-hidden h-full relative group">
                     <div className='absolute top-2 right-2 z-[1]' >
                         <StatusBadge type={item?.veg_status} />
                     </div>
+
+                    {/* {itemInOrder && (
+                        <div className="absolute top-2 left-2 z-[1]">
+                            <Badge variant="primary" className="bg-primary text-primary-foreground">
+                                {itemInOrder.quantity} in order
+                            </Badge>
+                        </div>
+                    )} */}
+
                     <OptimizedImage src={item?.image_details?.url} alt={item?.name} />
+
                     <CardContent className="flex flex-col flex-auto justify-between p-4 px-2">
                         <div className="flex flex-col gap-1">
                             <CardTitle style={styles?.titleStyle} className="text-lg text-primary">
                                 {item?.name}
                             </CardTitle>
-                            <CardDescription style={styles?.descriptionStyle} className="text-secondary">
+                            <CardDescription style={styles?.descriptionStyle} className="text-secondary line-clamp-2">
                                 {item?.description}
                             </CardDescription>
                         </div>
@@ -74,9 +105,61 @@ const MenuItem = memo(({ item, styles }) => {
                             <span style={styles?.titleStyle} className="text-base font-bold">
                                 ${item?.price}
                             </span>
-                            <Button disabled={!(item.availability === 'in_stock')} style={styles?.buttonBackgroundStyle} variant='primary' size='sm' >
-                                <p style={styles?.buttonLabelStyle} > {item.availability === 'in_stock' ? "Order" : "Out of Stock"}</p>
-                            </Button>
+                            {
+                                !!itemInOrder ?
+
+                                    (<div className='flex items-center gap-x-1' >
+                                        <Button
+                                            disabled={!isInStock}
+                                            style={styles?.buttonBackgroundStyle}
+                                            variant='primary'
+                                            size='icon'
+                                            onClick={handleAddToOrder}
+                                            className="flex items-center gap-1"
+                                        >
+                                            <p style={styles?.buttonLabelStyle}  >
+                                                <Plus size={14} />
+                                            </p>
+                                        </Button>
+                                        <Chip className='gap-1 w-8 h-8  bg-white p-0 flex items-center justify-center' variant='outline' radius='md' size='sm' color={'gray'}>
+                                            {itemInOrder.quantity}
+                                        </Chip>
+
+                                        <Button
+                                            disabled={!isInStock}
+                                            style={styles?.buttonBackgroundStyle}
+                                            variant='primary'
+                                            size='icon'
+                                            onClick={() => removeItem(item)}
+                                            className="flex items-center gap-1"
+                                        >
+                                            <p style={styles?.buttonLabelStyle} >
+                                                <Minus size={14} />
+                                            </p>
+                                        </Button>
+                                    </div>)
+
+                                    : (
+
+                                        <Button
+                                            disabled={!isInStock}
+                                            style={styles?.buttonBackgroundStyle}
+                                            variant='primary'
+                                            size='sm'
+                                            onClick={handleAddToOrder}
+                                            className="flex items-center gap-1"
+                                        >
+                                            <p style={styles?.buttonLabelStyle} className='flex items-center gap-1' >
+                                                {isInStock ? (
+                                                    <><PlusCircle className="h-4 w-4" />Add</>
+                                                ) : (
+                                                    <><AlertCircle className="h-4 w-4" />Out of Stock</>
+                                                )}
+                                            </p>
+                                        </Button>
+                                    )
+                            }
+
                         </div>
                     </CardContent>
                 </Card>
@@ -85,6 +168,7 @@ const MenuItem = memo(({ item, styles }) => {
             )}
         </div>
     );
+
 });
 
 const CategoryAccordion = memo(({ category, globalConfig }) => {
@@ -112,7 +196,7 @@ const CategoryAccordion = memo(({ category, globalConfig }) => {
         <Card
             key={categoryId}
             value={categoryId}
-            className={cn('bg-card rounded-md overflow-hidden border-none px-3')}
+            className={cn('bg-card md:rounded-md rounded overflow-hidden border-none md:px-3 px-1')}
             style={styles?.sectionStyle}
             id={categoryId}
             ref={ref}
@@ -176,7 +260,7 @@ export default function CustomerMenuViewer({ menuConfig }) {
 
 
     return (
-        <div className="p-4 bg-gray-100/90 min-h-[90dvh] max-h-[90dvh] overflow-auto space-y-4" style={containerStyle}>
+        <div className="md:p-4 p-2 bg-gray-100/90 min-h-[100dvh] max-h-[100dvh] overflow-auto space-y-4" style={containerStyle}>
             {visibleCategories.map(category => (
                 <CategoryAccordion
                     key={category.id || category.unique_id || category.name}
