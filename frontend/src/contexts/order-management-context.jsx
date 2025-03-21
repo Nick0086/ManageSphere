@@ -2,9 +2,13 @@
 
 import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import moment from "moment";
+
 
 // Order context for state management
 const OrderContext = createContext();
+const OrderHistoryContext = createContext();
+
 
 // Initial state
 const initialState = {
@@ -37,10 +41,7 @@ function orderReducer(state, action) {
                 };
             } else {
                 // New item
-                const newItem = {
-                    ...action.payload,
-                    quantity: 1
-                };
+                const newItem = { ...action.payload, quantity: 1 };
 
                 return {
                     ...state,
@@ -90,7 +91,7 @@ function orderReducer(state, action) {
                 ...state,
                 isOrderDrawerOpen: !state.isOrderDrawerOpen
             };
-        
+
         case 'SET_SUBMITTING':
             return {
                 ...state,
@@ -199,7 +200,7 @@ export const OrderProvider = ({ children }) => {
 
             // Clear the order after successful submission
             clearOrder();
-            
+
             // Close the drawer
             toggleOrderDrawer();
 
@@ -244,6 +245,56 @@ export const useOrder = () => {
     const context = useContext(OrderContext);
     if (!context) {
         throw new Error('useOrder must be used within an OrderProvider');
+    }
+    return context;
+};
+
+export const OrderHistoryProvider = ({ restaurantId, tableId, children }) => {
+
+    const [orderHistory, setOrderHistory] = useState({});
+
+    // Load order from local storage when restaurantId or tableId changes
+    useEffect(() => {
+        const savedOrder = localStorage.getItem(`order_${restaurantId}_${tableId}`);
+        console.log("OrderHistoryProvider",savedOrder)
+        if (savedOrder) {
+            setOrderHistory(JSON.parse(savedOrder));
+        } else {
+            setOrderHistory([]);
+        }
+    }, [restaurantId, tableId]);
+
+    useEffect(() => {
+        if(Object.keys(orderHistory || {})?.length > 0){
+            localStorage.setItem(`order_${restaurantId}_${tableId}`, JSON.stringify(orderHistory));
+        }
+    }, [orderHistory]);
+
+    // Context functions
+    const addItem = (item) => {
+        setOrderHistory((prevItems) => ({
+            ...prevItems,
+            [moment().format('DD-MM-YYYY HH:mm:ss')]: item
+        }));
+    };
+
+    const clearOrder = () => {
+        setOrderHistory([]);
+    };
+
+
+    return (
+        <OrderHistoryContext.Provider value={{ orderHistory, clearOrder, addItem }}>
+            {children}
+        </OrderHistoryContext.Provider>
+    );
+};
+
+// Custom hook for using the order context
+export const useOrderHistory = () => {
+    const context = useContext(OrderHistoryContext);
+    if (!context) {
+        throw new Error('useOrderHistory must be used within an OrderHistoryProvider');
     }
     return context;
 };

@@ -65,7 +65,8 @@ const MenuItem = memo(({ item, styles }) => {
     const handleAddToOrder = () => {
         if (isInStock) {
             addItem({
-                id: item.id || item.unique_id,
+                id: item.id,
+                unique_id: item.unique_id,
                 name: item.name,
                 price: parseFloat(item.price),
                 veg_status: item.veg_status,
@@ -114,22 +115,6 @@ const MenuItem = memo(({ item, styles }) => {
                                             style={styles?.buttonBackgroundStyle}
                                             variant='primary'
                                             size='icon'
-                                            onClick={handleAddToOrder}
-                                            className="flex items-center gap-1"
-                                        >
-                                            <p style={styles?.buttonLabelStyle}  >
-                                                <Plus size={14} />
-                                            </p>
-                                        </Button>
-                                        <Chip className='gap-1 w-8 h-8  bg-white p-0 flex items-center justify-center' variant='outline' radius='md' size='sm' color={'gray'}>
-                                            {itemInOrder.quantity}
-                                        </Chip>
-
-                                        <Button
-                                            disabled={!isInStock}
-                                            style={styles?.buttonBackgroundStyle}
-                                            variant='primary'
-                                            size='icon'
                                             onClick={() => removeItem(item)}
                                             className="flex items-center gap-1"
                                         >
@@ -137,6 +122,24 @@ const MenuItem = memo(({ item, styles }) => {
                                                 <Minus size={14} />
                                             </p>
                                         </Button>
+
+                                        <Chip className='gap-1 w-8 h-8  bg-white p-0 flex items-center justify-center' variant='outline' radius='md' size='sm' color={'gray'}>
+                                            {itemInOrder.quantity}
+                                        </Chip>
+                                        <Button
+                                            disabled={!isInStock}
+                                            style={styles?.buttonBackgroundStyle}
+                                            variant='primary'
+                                            size='icon'
+                                            onClick={handleAddToOrder}
+                                            className="flex items-center gap-1"
+                                        >
+                                            <p style={styles?.buttonLabelStyle}  >
+                                                <Plus size={14} />
+                                            </p>
+                                        </Button>
+
+
                                     </div>)
 
                                     : (

@@ -4,13 +4,15 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, Plus, Minus, Trash2, Loader2, ShoppingBag } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { useOrder } from '@/contexts/order-management-context';
+import { useOrder, useOrderHistory } from '@/contexts/order-management-context';
 import { Chip } from '../ui/chip';
 import { AppTooltip } from '@/common/AppTooltip';
 import { cn } from '@/lib/utils';
+import { useMutation } from '@tanstack/react-query';
+import { toastSuccess } from '@/utils/toast-utils';
+import { createOrder } from '@/service/order.service';
 
 const StatusBadge = memo(({ type }) => {
     return (
@@ -56,41 +58,31 @@ const OrderItem = ({ item }) => {
 
 export const OrderDrawer = () => {
     const { restaurantId, tableId } = useParams();
-    const {
-        orderItems,
-        total,
-        isOrderDrawerOpen,
-        toggleOrderDrawer,
-        clearOrder,
-        submitOrder,
-        isSubmitting
-    } = useOrder();
+    const { orderItems, total, isOrderDrawerOpen, toggleOrderDrawer, clearOrder, submitOrder, isSubmitting } = useOrder();
+    const { addItem } = useOrderHistory()
 
     const orderCount = orderItems.reduce((sum, item) => sum + item.quantity, 0);
 
+    const orderCreateMutation = useMutation({
+        mutationFn: createOrder,
+        onSuccess: (res, variables) => {
+            toastSuccess(res?.message || 'Order successfully');
+            console.log(res)
+            addItem({ ...variables, orderUniqueId: res?.orderId })
+            clearOrder()
+        },
+        onError: (error) => {
+            toastError(`Error During Add Order: ${error?.err?.message}`);
+        }
+    });
+
     const handlePlaceOrder = () => {
-        console.log(orderItems)
-        // submitOrder(tableId, restaurantId);
+        orderCreateMutation.mutate({ items: orderItems, totalAmount: total, restaurantId, tableId })
     };
 
     return (
         <Sheet open={isOrderDrawerOpen} >
             <SheetTrigger asChild>
-                {/* <Button
-                    variant="primary"
-                    size="lg"
-                    className="fixed flex items-center gap-1 bottom-4 right-4 z-50 rounded-full shadow-lg"
-                    onClick={toggleOrderDrawer}
-                >
-                    <ShoppingCart shapeRendering={20} />
-                    <span>Order</span>
-                    {orderCount > 0 && (
-                        <Chip className='gap-1 h-6 w-6 bg-white p-0 flex items-center justify-center' variant='outline' radius='md' size='sm' color={'gray'}>
-                            {orderCount}
-                        </Chip>
-                    )}
-                </Button> */}
-
                 <Card
                     className="fixed bottom-4 right-4 z-50 flex items-center justify-between p-4 cursor-pointer bg-surface-background"
                     onClick={toggleOrderDrawer}
@@ -117,7 +109,7 @@ export const OrderDrawer = () => {
                     {orderItems.length > 0 ? (
                         <>
                             <ScrollArea className="flex-1 p-4">
-                                <div  >
+                                <div >
                                     {orderItems.map((item) => (
                                         <OrderItem key={item.id || item.unique_id} item={item} />
                                     ))}
@@ -130,29 +122,12 @@ export const OrderDrawer = () => {
                                     <span className="font-semibold">${total.toFixed(2)}</span>
                                 </div>
                                 <div className="flex gap-2 p-4 pt-2">
-                                    <Button
-                                        variant="outline"
-                                        className="flex-1"
-                                        onClick={clearOrder}
-                                        disabled={isSubmitting}
-                                    >
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        Clear All
+                                    <Button variant="outline" className="flex-1" onClick={clearOrder} disabled={isSubmitting}>
+                                        <Trash2 className="mr-2 h-4 w-4" /> Clear All
                                     </Button>
-                                    <Button
-                                        variant="primary"
-                                        className="flex-1"
-                                        onClick={handlePlaceOrder}
-                                        disabled={isSubmitting || orderItems.length === 0}
-                                    >
-                                        {isSubmitting ? (
-                                            <>
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                Placing Order...
-                                            </>
-                                        ) : (
-                                            'Place Order'
-                                        )}
+
+                                    <Button variant="primary" className="flex-1" onClick={handlePlaceOrder} disabled={isSubmitting || orderItems.length === 0 || orderCreateMutation?.isPending} isLoading={orderCreateMutation?.isPending || isSubmitting}>
+                                        Place Order
                                     </Button>
                                 </div>
                             </div>
@@ -164,11 +139,7 @@ export const OrderDrawer = () => {
                             <p className="text-muted-foreground mt-2">
                                 Add items from the menu to start your order
                             </p>
-                            <Button
-                                variant="outline"
-                                className="mt-4"
-                                onClick={toggleOrderDrawer}
-                            >
+                            <Button variant="outline" className="mt-4" onClick={toggleOrderDrawer}>
                                 Browse Menu
                             </Button>
                         </div>

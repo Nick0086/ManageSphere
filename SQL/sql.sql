@@ -103,3 +103,28 @@ CREATE TABLE tables (
     FOREIGN KEY (user_id) REFERENCES users(unique_id) ON DELETE CASCADE,
     FOREIGN KEY (template_id) REFERENCES templates(unique_id) ON DELETE CASCADE
 );
+
+CREATE TABLE orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    unique_id CHAR(36) NOT NULL UNIQUE,
+    restaurant_id CHAR(36) NOT NULL,  -- users.unique_id (cafe owner)
+    table_id CHAR(36) NOT NULL,
+    status ENUM('pending', 'confirmed', 'preparing', 'ready', 'completed', 'cancelled') DEFAULT 'pending',
+    total_amount DECIMAL(10,2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (restaurant_id) REFERENCES users(unique_id),
+    FOREIGN KEY (table_id) REFERENCES tables(unique_id)
+);
+
+CREATE TABLE order_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    unique_id CHAR(36) NOT NULL UNIQUE,
+    order_id CHAR(36) NOT NULL,
+    menu_item_id CHAR(36) NOT NULL,
+    quantity INT NOT NULL,
+    price DECIMAL(10,2) NOT NULL,  -- Snapshot of price at order time
+    special_instructions TEXT,
+    FOREIGN KEY (order_id) REFERENCES orders(unique_id),
+    FOREIGN KEY (menu_item_id) REFERENCES menu_items(unique_id)
+);

@@ -46,7 +46,7 @@ export default function QrCodeToolbar({
 
                 <FacetedFilter title="Template" options={templateOptions} onFilterChange={setSelectedTemplate} value={selectedTemplate} />
 
-                {(searchQuery && selectedTemplate?.length) ? (
+                {(searchQuery || selectedTemplate?.length) ? (
                     <Button variant="ghost" onClick={resetFilters} className="text-red-500 h-8 px-1 lg:px-2 hover:bg-red-100 hover:text-red-700">
                         Reset
                         <X className="ml-2 h-4 w-4" />

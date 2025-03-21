@@ -12,7 +12,7 @@ import { ErrorState } from '../ui/error';
 import SlackLoader from '../ui/CustomLoaders/SlackLoader';
 import { DEFAULT_SECTION_THEME } from '../Menu/Templates/utils';
 import CustomerMenuViewer from './CustomerMenuViewer';
-import { OrderProvider } from '@/contexts/order-management-context';
+import { OrderHistoryProvider, OrderProvider } from '@/contexts/order-management-context';
 import { OrderDrawer } from './OrderDrawer';
 
 export default function CustomerMenuIndex() {
@@ -140,8 +140,10 @@ export default function CustomerMenuIndex() {
     return (
         <OrderProvider>
             <div className="relative">
-            <CustomerMenuViewer menuConfig={derivedTemplateConfig} />
-            <OrderDrawer />
+                <CustomerMenuViewer menuConfig={derivedTemplateConfig} />
+                <OrderHistoryProvider restaurantId={restaurantId} tableId={tableId} >
+                    <OrderDrawer />
+                </OrderHistoryProvider>
             </div>
         </OrderProvider>
 
