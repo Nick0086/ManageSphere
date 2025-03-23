@@ -21,7 +21,7 @@ export default function CommonTable({
 }) {
     return (
         <div className={tableBodyClassName}>
-            <Table parentClassName={cn('max-h-[69dvh] h-[69dvh]', tableStyle)} >
+            <Table parentClassName={cn('max-h-[65dvh] h-[65dvh]', tableStyle)} >
                 <TableHeader className={cn("sticky top-0 bg-gray-100 z-[10]", tableHeadStyle)}>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id} className={cn("", tableHeadRowStyle)}>

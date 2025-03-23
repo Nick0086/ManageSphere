@@ -66,7 +66,7 @@ export default function Sidebar({
 
     return (
         <SidebarProvider>
-            <SidebarComponent className={cn('shadow')} collapsible="icon" style={{ fontFamily: 'Nunito, "Segoe UI", arial' }} >
+            <SidebarComponent className={cn('')} collapsible="icon" style={{ fontFamily: 'Nunito, "Segoe UI", arial' }} >
                 <SidebarHeader>
                     <SidebarMenu>
                         <SidebarMenuItem>
@@ -104,7 +104,7 @@ export default function Sidebar({
                 </SidebarContent>
             </SidebarComponent>
             <SidebarInset className={cn('h-full w-full min-w-0')} >
-                <header className={cn("sticky flex h-12 shrink-0 top-0 z-10 w-full bg-background/95 shadow backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:shadow-secondary px-4")}>
+                <header className={cn("sticky flex h-12 shrink-0 top-0 z-10 w-full bg-background/95 border-b backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:shadow-secondary px-4")}>
                     <div className="flex items-center gap-2">
                         <SidebarTrigger className="-ml-1" />
                         <Separator orientation="vertical" className="mr-2 h-4" />
@@ -114,7 +114,7 @@ export default function Sidebar({
                         <UserNav />
                     </div>
                 </header>
-                <main className="flex-1 overflow-auto md:p-2 lg:p-4">
+                <main className="flex-1 overflow-auto md:p-2 lg:p-4 bg-surface-background">
                     <Outlet />
                 </main>
             </SidebarInset>

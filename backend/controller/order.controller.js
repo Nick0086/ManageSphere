@@ -43,6 +43,47 @@ async function executeWithRetry(sql, params, maxRetries = 3) {
     throw new Error(`Failed to affect rows after ${maxRetries} attempts`);
 }
 
+export const getAllOrders = async (req, res) => {
+    try {
+        // Parse query parameters
+        const {  limit = 20, offset = 0 } = req.query;
+        const { unique_id: restaurantId } = req.user;
+        const { filter = {} } = req.body;
+
+        const filterMap = {
+            'status': "o.status IN (?)",
+            'table': "o.table_id IN (?)",
+            'id': "o.unique_id LIKE ?"
+        };
+
+        let whereClause = 'WHERE o.restaurant_id = ?';
+        let params = [restaurantId];
+        
+        Object.keys(filter)?.forEach((key) => {
+            if (filter[key] && filter[key] !== ' ' && Array.isArray(filter[key]) && filter[key].length > 0) {
+                whereClause += ` AND ${filterMap[key]} `;
+                params.push(filter[key]);
+            } else if (filter[key] && filter[key] !== ' ' && key === 'id') {
+                whereClause += ` AND ${filterMap[key]} `;
+                params.push(`%${filter[key]}%`);
+            }
+        });
+
+        // Query to fetch orders with item count
+        const queryStr = ` SELECT o.*, t.table_number as table_name FROM orders o LEFT JOIN tables t ON t.unique_id = o.table_id ${whereClause} GROUP BY o.id ORDER BY o.created_at DESC  LIMIT ? OFFSET ? `;
+        const results = await query(queryStr, [...params, parseInt(limit), parseInt(offset)]);
+
+        const countQuery = ` SELECT COUNT(*) as total FROM orders o ${whereClause}`;
+        const countResult = await query(countQuery, params);
+        const total = countResult[0].total;
+
+        // Send response
+        res.json({ success: true, data: results, metadata: { total, limit: parseInt(limit), offset: parseInt(offset) } });
+    } catch (error) {
+        handleError('order.controller.js', 'getAllOrders', res, error, 'Failed to fetch orders');
+    }
+};
+
 export const createOrder = async (req, res) => {
     try {
         const { unique_id: restaurantId } = req.user;
@@ -100,7 +141,7 @@ export const createOrder = async (req, res) => {
 
         try {
             // Insert order with retry
-            const orderUniqueId = createUniqueId("ORDER");
+            const orderUniqueId = createUniqueId("ORD");
             const orderSql = `INSERT INTO orders (unique_id, restaurant_id, table_id, status, total_amount) VALUES (?, ?, ?, 'pending', ?)`;
             await executeWithRetry(orderSql, [orderUniqueId, restaurantId, tableId, totalAmount]);
 

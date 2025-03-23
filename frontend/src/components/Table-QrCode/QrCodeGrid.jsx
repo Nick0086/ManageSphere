@@ -28,7 +28,7 @@ const QrCodeGrid = ({
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-5 gap-4">
             {qrCodes.map((qr) => (
-                <Card key={qr.unique_id} className="shadow p-0 flex flex-col hover:shadow-md relative">
+                <Card key={qr.unique_id} className="shadow-none  p-0 flex flex-col hover:shadow-md relative">
                     {/* Selection checkbox */}
 
 

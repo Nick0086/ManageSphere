@@ -150,8 +150,8 @@ export default function QrCodeManagerIndex() {
                 `}
             />
 
-            <Card className="rounded-lg shadow-none border-none">
-                <CardHeader className="p-0 pb-2 border-b">
+            <Card className="rounded-lg border">
+                <CardHeader className="p-0 pb-2 border-b px-4 pt-3">
                     <div className=" mb-2">
                         <QrCodeToolbar
                             onGenerate={() => handleModalToggle({ isOpen: true })}
@@ -172,9 +172,9 @@ export default function QrCodeManagerIndex() {
 
                     </div>
                 </CardHeader>
-                <CardContent className="mt-4 px-0">
+                <CardContent className="mt-4 px-2">
                     {error ? (
-                        <p className="mt-2 flex items-center justify-center h-52 text-2xl font-bold text-primary0">Failed to load QR Codes.</p>
+                        <p className="mt-2 flex items-center justify-center h-52 text-2xl font-bold text-primary">Failed to load QR Codes.</p>
                     ) : data?.qrCodes?.length && filteredItems?.length ? (
                         <QrCodeGrid
                             qrCodes={filteredItems}

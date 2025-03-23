@@ -91,7 +91,7 @@ const QrCodeForm = memo(({ open, onClose, isEdit, selectedData, templateOptions,
 
     return (
         <Dialog open={open} onOpenChange={handleModalClose}>
-            <DialogContent className='lg:min-w-[40%] md:min-w-[50%] min-w-[95%]'>
+            <DialogContent className='lg:min-w-[40%] md:min-w-[50%] min-w-[95%] overflow-hidden'>
                 {open && (
                     <>
                         <DialogHeader>
