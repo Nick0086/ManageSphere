@@ -15,6 +15,7 @@ import OrderFilterBar from './orders-filter-bar';
 import { getAllQrCode } from '@/service/table-qrcode.service';
 import SlackLoader from '../ui/CustomLoaders/SlackLoader';
 import { Chip } from '../ui/chip';
+import { Link } from 'react-router';
 
 export default function OrdersIndex() {
 
@@ -30,7 +31,7 @@ export default function OrdersIndex() {
   });
 
   const { data, isLoading, error } = useQuery({
-    queryKey: [orderQueryKeyLookup['ORDERs'], pagination?.pageSize, pagination?.pageIndex, filter],
+    queryKey: [orderQueryKeyLookup['ORDERS'], pagination?.pageSize, pagination?.pageIndex, filter],
     queryFn: () => getAllOrder({ offset: pagination?.pageIndex, limit: pagination?.pageSize, filter }),
   });
 
@@ -84,12 +85,12 @@ export default function OrdersIndex() {
       HeaderClassName: 'text-start',
       cell: ({ cell }) => {
         return (
-          <div key={cell?.id} className="flex items-center text-blue-600 cursor-pointer group gap-2" onClick={() => handleShowDetails(cell.row.original)}>
+          <Link to={`/order-management/${cell.getValue()?.replace("_", "-")}`} key={cell?.id} className="flex items-center text-blue-600 cursor-pointer group gap-2" >
             <span className='whitespace-nowrap flex items-center gap-2'><ReceiptText size={16} />  #{cell.getValue()?.replace("_", "-")}</span>
             <div className="opacity-0 transition-all group-hover:opacity-100">
               <ChevronsRight size={18} />
             </div>
-          </div>
+          </Link>
         );
       }
     },

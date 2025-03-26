@@ -19,7 +19,7 @@ const limiter = rateLimit({
 const app = express();
 
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173', 'http://localhost:8080', 'http://localhost:5174', 'http://192.168.1.10:5173', process.env.FRONTEND_DOMAIN],
+    origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173', 'http://localhost:8080', 'http://localhost:5174', 'http://192.168.1.9:5173', process.env.FRONTEND_DOMAIN],
     credentials: true
 }))
 

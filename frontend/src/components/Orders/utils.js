@@ -1,6 +1,7 @@
 export const orderQueryKeyLookup = {
-    'ORDERs': 'tables-orders',
+    'ORDERS': 'tables-orders',
     'QRCODES': 'tables-list-filter',
+    'ORDER_DETAILS': 'order-details',
 }
 
 export const orderStatus = [

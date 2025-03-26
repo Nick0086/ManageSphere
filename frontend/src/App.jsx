@@ -10,12 +10,13 @@ import Sidebar from './components/Sidebar/Sidebar';
 import Dashboard from './components/Dashboard/Dashboard';
 import MenuRoutes from './routes/MenuRoutes';
 import QrCodeManagerIndex from './components/Table-QrCode/table-qrcodeIndex';
+import CustomerMenuIndex from './components/CustomerMenu/CustomerMenuIndex';
+import OrderRoutes from './routes/order-routes';
 
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
 import 'react-image-crop/dist/ReactCrop.css';
-import OrdersIndex from './components/Orders/OrdersIndex';
-import CustomerMenuIndex from './components/CustomerMenu/CustomerMenuIndex';
+
 
 
 
@@ -44,7 +45,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/menu-management/*" element={<MenuRoutes />} />
                 <Route path="/qr-management" element={<QrCodeManagerIndex />} />
-                <Route path="/order-management" element={<OrdersIndex />} />
+                <Route path="/order-management/*" element={<OrderRoutes />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
             </Route>

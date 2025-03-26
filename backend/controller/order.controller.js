@@ -46,7 +46,7 @@ async function executeWithRetry(sql, params, maxRetries = 3) {
 export const getAllOrders = async (req, res) => {
     try {
         // Parse query parameters
-        const {  limit = 20, offset = 0 } = req.query;
+        const { limit = 20, offset = 0 } = req.query;
         const { unique_id: restaurantId } = req.user;
         const { filter = {} } = req.body;
 
@@ -58,7 +58,7 @@ export const getAllOrders = async (req, res) => {
 
         let whereClause = 'WHERE o.restaurant_id = ?';
         let params = [restaurantId];
-        
+
         Object.keys(filter)?.forEach((key) => {
             if (filter[key] && filter[key] !== ' ' && Array.isArray(filter[key]) && filter[key].length > 0) {
                 whereClause += ` AND ${filterMap[key]} `;
@@ -78,15 +78,34 @@ export const getAllOrders = async (req, res) => {
         const total = countResult[0].total;
 
         // Send response
-        res.json({ success: true, data: results, metadata: { total, limit: parseInt(limit), offset: parseInt(offset) } });
+        res.status(201).json({ success: true, data: results, metadata: { total, limit: parseInt(limit), offset: parseInt(offset) } });
     } catch (error) {
         handleError('order.controller.js', 'getAllOrders', res, error, 'Failed to fetch orders');
     }
 };
 
+export const getOrderById = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { unique_id: restaurantId } = req.user;
+
+        const order = await query("SELECT o.*, t.table_number as table_name FROM orders o LEFT JOIN tables t ON t.unique_id = o.table_id WHERE o.unique_id = ? AND o.restaurant_id = ?", [orderId, restaurantId]);
+
+        if (order.length === 0) { return res.status(404).json({ success: false, message: "Order not found" }); }
+
+        const orderItems = await query("SELECT oi.*, mi.name as menu_item_name , mi.veg_status as veg_status FROM order_items oi LEFT JOIN menu_items mi ON mi.unique_id = oi.menu_item_id WHERE order_id = ?", [orderId]);
+
+        res.status(201).json({ success: true, message: "Order fetched successfully.", order : { ...order[0], items: orderItems } });
+
+} catch (error) {
+    handleError('order.controller.js', 'getOrderById', res, error, 'Failed to fetch order');
+}
+};
+
+
 export const createOrder = async (req, res) => {
     try {
-        const { unique_id: restaurantId } = req.user;
+        const { restaurantId } = req.params;
         const { items, tableId, totalAmount } = req.body;
 
         if (!items || !Array.isArray(items) || items.length === 0) {

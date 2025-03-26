@@ -11,7 +11,7 @@ import { Chip } from '../ui/chip';
 import { AppTooltip } from '@/common/AppTooltip';
 import { cn } from '@/lib/utils';
 import { useMutation } from '@tanstack/react-query';
-import { toastSuccess } from '@/utils/toast-utils';
+import { toastError, toastSuccess } from '@/utils/toast-utils';
 import { createOrder } from '@/service/order.service';
 
 const StatusBadge = memo(({ type }) => {
