@@ -38,7 +38,7 @@ const sideBarData = [
     {
         title: 'Invoice',
         icon:<ReceiptText />,
-        link: '/invoice',
+        link: '/invoice-management',
         isCollapsible: false,
     },
 ]

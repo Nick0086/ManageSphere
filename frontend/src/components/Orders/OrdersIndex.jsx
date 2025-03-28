@@ -158,7 +158,7 @@ export default function OrdersIndex() {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-00">
+      <CardContent className="p-0">
         {
           (isLoading || isTablesListLoading) ?
             (
