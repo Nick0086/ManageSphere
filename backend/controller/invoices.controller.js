@@ -140,22 +140,17 @@ async function batchUpdate(tableName, keyColumns, updateColumns, rows, errorMess
     const whereClause = keyColumns.map(col => `${col} = ?`).join(' AND ');
     const sql = `UPDATE ${tableName} SET ${setClause} WHERE ${whereClause}`;
 
-    await query("START TRANSACTION");
     try {
         const updates = rows.map(row =>
-            executeWithRetry(sql, row)
-                .then(result => {
+            executeWithRetry(sql, row).then(result => {
                     if (result.affectedRows === 0) {
                         throw new Error(`${errorMessage}: No rows affected`);
                     }
                     return result;
                 })
         );
-
         await Promise.all(updates);
-        await query("COMMIT");
     } catch (error) {
-        await query("ROLLBACK");
         throw error;
     }
 }
@@ -168,7 +163,6 @@ async function executeWithRetry(sql, params, maxRetries = MAX_RETRIES, initialDe
         'ETIMEDOUT',
         'ECONNRESET'
     ]);
-
     let lastError;
     for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
@@ -186,7 +180,6 @@ async function executeWithRetry(sql, params, maxRetries = MAX_RETRIES, initialDe
 
             const delay = initialDelay * Math.pow(2, attempt);
             console.warn(`Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms: ${error.message}`);
-            await new Promise(resolve => setTimeout(resolve, delay));
         }
     }
 
@@ -195,10 +188,7 @@ async function executeWithRetry(sql, params, maxRetries = MAX_RETRIES, initialDe
 
 // Optimized function to get existing items with single query
 async function getExistingItems(tableName, templateId) {
-    const items = await query(
-        `SELECT unique_id FROM ${tableName} WHERE invoice_template_id = ?`,
-        [templateId]
-    );
+    const items = await query(`SELECT unique_id FROM ${tableName} WHERE invoice_template_id = ?`, [templateId]);
     return new Set(items.map(item => item.unique_id));
 }
 
@@ -211,60 +201,51 @@ async function processAssociatedItems({
     newIds,
     userId,
     columns,
+    columnsComeFromUser,
     itemIdentifier
 }) {
-    const existingSet = new Set(existingItems);
-    const incomingIds = new Set(incomingItems.map(item => item.unique_id).filter(Boolean));
+    try {
+        const existingSet = new Set(existingItems);
+        const incomingIds = new Set(incomingItems.map(item => item.unique_id).filter(Boolean));
 
-    // Efficiently determine items to delete
-    const itemsToDelete = [...existingSet].filter(id => !incomingIds.has(id));
-
-    // Bulk delete removed items
-    if (itemsToDelete.length > 0) {
-        await executeWithRetry(
-            `DELETE FROM ${tableName} WHERE unique_id IN (?)`,
-            [itemsToDelete]
-        );
-    }
-
-    // Prepare bulk updates and inserts
-    const updates = [];
-    const inserts = [];
-    let newIdIndex = 0;
-
-    for (const item of incomingItems) {
-        if (item.unique_id) {
-            updates.push([...columns.map(col => item[col]), item.unique_id]);
-        } else {
-            inserts.push([newIds[newIdIndex++], parentId, userId, ...columns.map(col => item[col])]);
+        // Efficiently determine items to delete
+        const itemsToDelete = [...existingSet].filter(id => !incomingIds.has(id));
+        // Bulk delete removed items
+        if (itemsToDelete.length > 0) {
+            await executeWithRetry(`DELETE FROM ${tableName} WHERE unique_id IN (?)`,[itemsToDelete]);
         }
-    }
 
-    // Execute bulk operations
-    if (updates.length > 0) {
-        await batchUpdate(
-            tableName,
-            ['unique_id'],
-            columns,
-            updates,
-            `Failed to update ${itemIdentifier}`
-        );
-    }
+        // Prepare bulk updates and inserts
+        const updates = [];
+        const inserts = [];
+        let newIdIndex = 0;
 
-    if (inserts.length > 0) {
-        await batchInsert(
-            tableName,
-            ['unique_id', 'invoice_template_id', 'user_id', ...columns],
-            inserts,
-            MAX_BATCH_SIZE
-        );
+
+        for (const item of incomingItems) {
+            if (item.unique_id) {
+                updates.push([...columnsComeFromUser.map(col => item[col]), item.unique_id]);
+            } else {
+                inserts.push([newIds[newIdIndex++], parentId, userId, ...columnsComeFromUser.map(col => item[col])]);
+            }
+        }
+
+        // Execute bulk operations
+        if (updates.length > 0) {
+            await batchUpdate(tableName, ['unique_id'], columns, updates, `Failed to update ${itemIdentifier}`);
+        }
+
+        if (inserts.length > 0) {
+            await batchInsert(tableName, ['unique_id', 'invoice_template_id', 'user_id', ...columns], inserts, MAX_BATCH_SIZE);
+        }
+    } catch (error) {
+        console.log('error', error);
     }
 }
 
 // Main controller functions
-const createInvoiceTemplate = async (req, res) => {
+export const createInvoiceTemplate = async (req, res) => {
     try {
-        const { name, headerContent, footerContent, logoUrl, tax_configurations = [], additional_charges = [] } = req.body;
+        const { name, headerText, footerText, logoUrl, tax_configurations = [], additional_charges = [] } = req.body;
         const { unique_id: userId } = req.user;
 
         // Input validation
@@ -287,10 +268,7 @@ const createInvoiceTemplate = async (req, res) => {
         const invoiceTemplateName = name.trim();
 
         // Check for duplicate name
-        const [exists] = await query(
-            'SELECT 1 FROM invoice_templates WHERE user_id = ? AND name = ?',
-            [userId, invoiceTemplateName]
-        );
+        const [exists] = await query('SELECT 1 FROM invoice_templates WHERE user_id = ? AND name = ?', [userId, invoiceTemplateName]);
 
         if (exists) {
             return res.status(400).json({
@@ -306,13 +284,12 @@ const createInvoiceTemplate = async (req, res) => {
         const chargeIds = Array(additional_charges.length).fill().map(() => uuidv4());
 
         // Execute transaction
-        await query("START TRANSACTION");
 
         try {
             // Create template
             await query(
                 'INSERT INTO invoice_templates (unique_id, user_id, name, header_content, footer_content, logo_url) VALUES (?, ?, ?, ?, ?, ?)',
-                [templateId, userId, invoiceTemplateName, headerContent, footerContent, logoUrl]
+                [templateId, userId, invoiceTemplateName, headerText, footerText, logoUrl]
             );
 
             // Process tax configurations and additional charges
@@ -346,15 +323,13 @@ const createInvoiceTemplate = async (req, res) => {
                         userId,
                         charge.name,
                         charge.amount,
-                        charge.charge_type || 'fixed',
+                        charge.type || 'fixed',
                         charge.applies_to || 'all',
                         charge.is_active || true
                     ]),
                     MAX_BATCH_SIZE
                 );
             }
-
-            await query("COMMIT");
 
             return res.status(201).json({
                 status: "success",
@@ -368,7 +343,6 @@ const createInvoiceTemplate = async (req, res) => {
             });
 
         } catch (error) {
-            await query("ROLLBACK");
             throw error;
         }
 
@@ -378,10 +352,10 @@ const createInvoiceTemplate = async (req, res) => {
 }
 
 // Update invoice template
-const updateInvoiceTemplate = async (req, res) => {
+export const updateInvoiceTemplate = async (req, res) => {
     try {
         const { templateId } = req.params;
-        const { name, headerContent, footerContent, logoUrl, tax_configurations = [], additional_charges = [] } = req.body;
+        const { name, headerText, footerText, logoUrl, tax_configurations = [], additional_charges = [] } = req.body;
         const { unique_id: userId } = req.user;
 
         // Input validation
@@ -404,10 +378,7 @@ const updateInvoiceTemplate = async (req, res) => {
         const invoiceTemplateName = name.trim();
 
         // Verify template ownership
-        const template = await query(
-            'SELECT 1 FROM invoice_templates WHERE unique_id = ? AND user_id = ?',
-            [templateId, userId]
-        );
+        const template = await query('SELECT 1 FROM invoice_templates WHERE unique_id = ? AND user_id = ?', [templateId, userId]);
 
         if (!template.length) {
             return res.status(404).json({
@@ -418,10 +389,7 @@ const updateInvoiceTemplate = async (req, res) => {
         }
 
         // Check for name conflicts
-        const [nameConflict] = await query(
-            'SELECT 1 FROM invoice_templates WHERE user_id = ? AND name = ? AND unique_id != ?',
-            [userId, invoiceTemplateName, templateId]
-        );
+        const [nameConflict] = await query('SELECT 1 FROM invoice_templates WHERE user_id = ? AND name = ? AND unique_id != ?', [userId, invoiceTemplateName, templateId]);
 
         if (nameConflict) {
             return res.status(400).json({
@@ -435,14 +403,10 @@ const updateInvoiceTemplate = async (req, res) => {
         const newTaxIds = Array(tax_configurations.filter(t => !t.unique_id).length).fill().map(() => uuidv4());
         const newChargeIds = Array(additional_charges.filter(c => !c.unique_id).length).fill().map(() => uuidv4());
 
-        await query("START TRANSACTION");
 
         try {
             // Update template
-            await query(
-                'UPDATE invoice_templates SET name = ?, header_content = ?, footer_content = ?, logo_url = ? WHERE unique_id = ?',
-                [invoiceTemplateName, headerContent, footerContent, logoUrl, templateId]
-            );
+            await query('UPDATE invoice_templates SET name = ?, header_content = ?, footer_content = ?, logo_url = ? WHERE unique_id = ?', [invoiceTemplateName, headerText, footerText, logoUrl, templateId]);
 
             // Process associated items
             const existingTaxes = await getExistingItems('tax_configurations', templateId);
@@ -456,7 +420,8 @@ const updateInvoiceTemplate = async (req, res) => {
                     incomingItems: tax_configurations,
                     newIds: newTaxIds,
                     userId,
-                    columns: ['name', 'rate', 'tax_type', 'applies_to', 'is_additional', 'is_compound', 'is_active'],
+                    columns: ['name', 'rate', 'applies_to'],
+                    columnsComeFromUser: ['name', 'rate', 'appliesTo'],
                     itemIdentifier: 'tax configuration'
                 }),
                 processAssociatedItems({
@@ -466,12 +431,11 @@ const updateInvoiceTemplate = async (req, res) => {
                     incomingItems: additional_charges,
                     newIds: newChargeIds,
                     userId,
-                    columns: ['name', 'amount', 'charge_type', 'applies_to', 'is_active'],
+                    columns: ['name', 'amount', 'charge_type'],
+                    columnsComeFromUser: ['name', 'amount', 'type'],
                     itemIdentifier: 'additional charge'
                 })
             ]);
-
-            await query("COMMIT");
 
             return res.status(200).json({
                 status: "success",
@@ -485,7 +449,6 @@ const updateInvoiceTemplate = async (req, res) => {
             });
 
         } catch (error) {
-            await query("ROLLBACK");
             throw error;
         }
 
@@ -495,12 +458,12 @@ const updateInvoiceTemplate = async (req, res) => {
 }
 
 // get all invoice templates
-const getAllInvoiceTemplates = async (req, res) => {
+export const getAllInvoiceTemplates = async (req, res) => {
     try {
         const { unique_id: userId } = req.user;
 
         const templates = await query(
-            'SELECT unique_id, name, created_at FROM invoice_templates WHERE user_id = ?',
+            'SELECT id, unique_id, name, is_default, created_at FROM invoice_templates WHERE user_id = ?',
             [userId]
         );
 
@@ -515,7 +478,7 @@ const getAllInvoiceTemplates = async (req, res) => {
 }
 
 // get invoice template by id
-const getInvoiceTemplateById = async (req, res) => {
+export const getInvoiceTemplateById = async (req, res) => {
     try {
         const { templateId } = req.params;
         const { unique_id: userId } = req.user;
@@ -544,7 +507,7 @@ const getInvoiceTemplateById = async (req, res) => {
 }
 
 // get all invoice templates with their associated items use left join
-const getAllInvoiceTemplatesWithItems = async (req, res) => {
+export const getAllInvoiceTemplatesWithItems = async (req, res) => {
     try {
         const { unique_id: userId } = req.user;
 
@@ -574,28 +537,52 @@ const getAllInvoiceTemplatesWithItems = async (req, res) => {
 }
 
 // get invoice template by id with their associated items
-const getInvoiceTemplateByIdWithItems = async (req, res) => {
+export const getInvoiceTemplateByIdWithItems = async (req, res) => {
     try {
         const { templateId } = req.params;
         const { unique_id: userId } = req.user;
 
-        const template = await query(
-            'SELECT invoice_templates.*, tax_configurations.*, additional_charges.* FROM invoice_templates LEFT JOIN tax_configurations ON invoice_templates.unique_id = tax_configurations.invoice_template_id LEFT JOIN additional_charges ON invoice_templates.unique_id = additional_charges.invoice_template_id WHERE invoice_templates.unique_id = ? AND invoice_templates.user_id = ?',
-            [templateId, userId]
-        );
+        // Step 1: Get the basic invoice template first
+        const templateQuery = `SELECT * FROM invoice_templates WHERE unique_id = ? AND user_id = ?LIMIT 1`;
+        const [templateResults] = await query(templateQuery, [templateId, userId]);
+
+        if (!templateResults || templateResults.length === 0) {
+            return res.status(404).json({
+                status: "error",
+                message: "Invoice template not found"
+            });
+        }
+
+        const template = templateResults[0] || templateResults;
+
+        // Step 2: Get tax configurations separately
+        const taxConfigQuery = `SELECT id, unique_id, name as tax_name, rate as tax_percentage, tax_type, applies_to, is_additional, is_compound, is_active, created_at, updated_at FROM tax_configurations WHERE invoice_template_id = ?`;
+        const taxConfigurations = await query(taxConfigQuery, [templateId]);
+
+        // Step 3: Get additional charges separately
+        const additionalChargesQuery = `SELECT id, unique_id, name as charge_name, amount as charge_amount, charge_type, applies_to, is_active, created_at, updated_at FROM additional_charges WHERE invoice_template_id = ?`;
+
+        const additionalCharges = await query(additionalChargesQuery, [templateId]);
+
+        // Step 4: Combine the results
+        const result = {
+            ...template,
+            tax_configurations: taxConfigurations || [],
+            additional_charges: additionalCharges || []
+        };
 
         return res.status(200).json({
             status: "success",
-            data: template
+            data: result
         });
 
     } catch (error) {
         handleError('invoices.controller.js', 'getInvoiceTemplateByIdWithItems', res, error);
     }
-}
+};
 
 // set default invoice template 
-const setDefaultInvoiceTemplate = async (req, res) => {
+export const setDefaultInvoiceTemplate = async (req, res) => {
     try {
         const { templateId } = req.params;
         const { unique_id: userId } = req.user;
@@ -612,13 +599,3 @@ const setDefaultInvoiceTemplate = async (req, res) => {
     }
 }
 
-
-export default {
-    createInvoiceTemplate,
-    updateInvoiceTemplate,
-    getAllInvoiceTemplates,
-    getInvoiceTemplateById,
-    getAllInvoiceTemplatesWithItems,
-    getInvoiceTemplateByIdWithItems,
-    setDefaultInvoiceTemplate
-}

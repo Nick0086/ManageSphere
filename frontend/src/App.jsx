@@ -12,13 +12,11 @@ import MenuRoutes from './routes/MenuRoutes';
 import QrCodeManagerIndex from './components/Table-QrCode/table-qrcodeIndex';
 import CustomerMenuIndex from './components/CustomerMenu/CustomerMenuIndex';
 import OrderRoutes from './routes/order-routes';
+import InvoiceRoutes from './routes/InvoiceRoutes';
 
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
 import 'react-image-crop/dist/ReactCrop.css';
-import InvoiceIndex from './components/invoices/InvoiceIndex';
-
-
 
 
 function App() {
@@ -47,7 +45,7 @@ function App() {
                 <Route path="/menu-management/*" element={<MenuRoutes />} />
                 <Route path="/qr-management" element={<QrCodeManagerIndex />} />
                 <Route path="/order-management/*" element={<OrderRoutes />} />
-                <Route path="/invoice-management" element={<InvoiceIndex />} />
+                <Route path="/invoice-management/*" element={<InvoiceRoutes />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
             </Route>
