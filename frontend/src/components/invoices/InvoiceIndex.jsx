@@ -49,12 +49,14 @@ export default function InvoiceIndex() {
     {
       header: "Sr No",
       accessorKey: "id",
-      colClassName: "w-2/12",
+      colClassName: "w-1/12",
     },
     {
       header: "Template Name",
       accessorKey: "name",
-      colClassName: "w-4/12",
+      colClassName: "w-5/12",
+      HeaderClassName: "text-start",
+      colClassName: "text-start",
     },
     {
       header: "Default Template",

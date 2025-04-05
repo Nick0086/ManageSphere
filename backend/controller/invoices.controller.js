@@ -245,7 +245,7 @@ async function processAssociatedItems({
 // Main controller functions
 export const createInvoiceTemplate = async (req, res) => {
     try {
-        const { name, headerText, footerText, logoUrl, tax_configurations = [], additional_charges = [] } = req.body;
+        const { name, headerText, footerText, logoUrl, tax_configurations = [], additional_charges = [], isDefault } = req.body;
         const { unique_id: userId } = req.user;
 
         // Input validation
@@ -287,10 +287,12 @@ export const createInvoiceTemplate = async (req, res) => {
 
         try {
             // Create template
-            await query(
-                'INSERT INTO invoice_templates (unique_id, user_id, name, header_content, footer_content, logo_url) VALUES (?, ?, ?, ?, ?, ?)',
-                [templateId, userId, invoiceTemplateName, headerText, footerText, logoUrl]
-            );
+            await query('INSERT INTO invoice_templates (unique_id, user_id, name, header_content, footer_content, logo_url) VALUES (?, ?, ?, ?, ?, ?, ?)',[templateId, userId, invoiceTemplateName, headerText, footerText, logoUrl]);
+
+            if(isDefault){
+                await executeWithRetry('UPDATE invoice_templates SET is_default = 0 WHERE user_id = ?',[userId]);
+                await executeWithRetry('UPDATE invoice_templates SET is_default = 1 WHERE unique_id = ?',[templateId]);
+            }
 
             // Process tax configurations and additional charges
             if (tax_configurations.length) {
@@ -355,7 +357,7 @@ export const createInvoiceTemplate = async (req, res) => {
 export const updateInvoiceTemplate = async (req, res) => {
     try {
         const { templateId } = req.params;
-        const { name, headerText, footerText, logoUrl, tax_configurations = [], additional_charges = [] } = req.body;
+        const { name, headerText, footerText, logoUrl, tax_configurations = [], additional_charges = [], isDefault } = req.body;
         const { unique_id: userId } = req.user;
 
         // Input validation
@@ -407,6 +409,11 @@ export const updateInvoiceTemplate = async (req, res) => {
         try {
             // Update template
             await query('UPDATE invoice_templates SET name = ?, header_content = ?, footer_content = ?, logo_url = ? WHERE unique_id = ?', [invoiceTemplateName, headerText, footerText, logoUrl, templateId]);
+
+            if(isDefault){
+                await executeWithRetry('UPDATE invoice_templates SET is_default = 0 WHERE user_id = ?',[userId]);
+                await executeWithRetry('UPDATE invoice_templates SET is_default = 1 WHERE unique_id = ?',[templateId]);
+            }
 
             // Process associated items
             const existingTaxes = await getExistingItems('tax_configurations', templateId);

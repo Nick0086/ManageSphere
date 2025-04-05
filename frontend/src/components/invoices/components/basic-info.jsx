@@ -28,6 +28,16 @@ export default function BasicInfo({ form, isDisabled }) {
                 placeholder="Enter the footer text of the template"
                 disabled={isDisabled}
             />
+            <ReusableFormField
+                control={form.control}
+                className='space-y-0'
+                containerClassName='flex items-end gap-2 space-y-0'
+                type="checkbox"
+                name="isDefault"
+                label="Default Template"
+                disabled={isDisabled}
+                placeholder="Select if this is the default template"
+            />
         </div>
     )
 }
