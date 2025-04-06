@@ -470,7 +470,7 @@ export const getAllInvoiceTemplates = async (req, res) => {
         const { unique_id: userId } = req.user;
 
         const templates = await query(
-            'SELECT id, unique_id, name, is_default, created_at FROM invoice_templates WHERE user_id = ?',
+            'SELECT id, unique_id, name, is_default, created_at, updated_at FROM invoice_templates WHERE user_id = ?',
             [userId]
         );
 
@@ -594,8 +594,8 @@ export const setDefaultInvoiceTemplate = async (req, res) => {
         const { templateId } = req.params;
         const { unique_id: userId } = req.user;
 
-        await query('UPDATE invoice_templates SET is_default = 0 WHERE user_id = ?', [userId]);
-        await query('UPDATE invoice_templates SET is_default = 1 WHERE unique_id = ?', [templateId]);
+        await executeWithRetry('UPDATE invoice_templates SET is_default = 0 WHERE user_id = ?', [userId]);
+        await executeWithRetry('UPDATE invoice_templates SET is_default = 1 WHERE unique_id = ?', [templateId]);
 
         return res.status(200).json({
             status: "success",

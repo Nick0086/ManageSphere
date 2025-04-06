@@ -18,7 +18,7 @@ const InvoiceTableToolbar = ({
                     onChange={(event) =>
                         table.getColumn(searchColumnId)?.setFilterValue(event.target.value)
                     }
-                    className="h-8 w-[150px] lg:w-[250px]"
+                    className="h-8 w-full md:w-[150px] lg:w-[250px]"
                 />
 
                 {isFiltered && (

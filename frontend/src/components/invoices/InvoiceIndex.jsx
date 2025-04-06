@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Button } from '../ui/button'
-import { Info, Pencil, Plus } from 'lucide-react'
+import { Info, Pencil, Plus, Star } from 'lucide-react'
 import { useNavigate } from 'react-router'
-import { toastError } from '@/utils/toast-utils'
-import { getAllInvoiceTemplates } from '@/service/invoices.service'
+import { toastError, toastSuccess } from '@/utils/toast-utils'
+import { getAllInvoiceTemplates, setDefaultInvoiceTemplate } from '@/service/invoices.service'
 import { invoiceQueryKeyLookup } from './utils'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import SlackLoader from '../ui/CustomLoaders/SlackLoader'
 import RowDetailsModal from '@/common/Modal/RowDetailsModal'
 import { getCoreRowModel, getFacetedRowModel, getFacetedUniqueValues, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table'
@@ -14,6 +14,7 @@ import CommonTable from '@/common/Table/CommonTable'
 import { DataTablePagination } from '../ui/table-pagination'
 import InvoiceTableToolbar from './components/InvoiceTableToolbar'
 import { Chip } from '../ui/chip'
+import { format, parseISO } from 'date-fns';
 
 export default function InvoiceIndex() {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ export default function InvoiceIndex() {
   const [columnFilters, setColumnFilters] = useState([])
   const [selectedRow, setSelectedRow] = useState(null);
 
-  const { data: invoiceTemplates, isLoading: isInvoiceTemplatesLoading, isError: isInvoiceTemplatesError } = useQuery({
+  const { data: invoiceTemplates, isLoading: isInvoiceTemplatesLoading, isError: isInvoiceTemplatesError, refetch } = useQuery({
     queryKey: [invoiceQueryKeyLookup['INVOICE_TEMPLATES']],
     queryFn: () => getAllInvoiceTemplates(),
   });
@@ -45,6 +46,17 @@ export default function InvoiceIndex() {
     navigate(`${data?.unique_id}`);
   }, []);
 
+  const handleDefultMutation = useMutation({
+    mutationFn: setDefaultInvoiceTemplate,
+    onSuccess: (res) => {
+        toastSuccess(res?.message || `Default Invoice Template set successfully`);
+        refetch();
+    },
+    onError: (error) => {
+        toastError(`Error setting default Invoice Template: ${error?.err?.message}`);
+    }
+  });
+
   const columns = useMemo(() => [
     {
       header: "Sr No",
@@ -54,19 +66,44 @@ export default function InvoiceIndex() {
     {
       header: "Template Name",
       accessorKey: "name",
-      colClassName: "w-5/12",
+      colClassName: "w-4/12 text-start",
       HeaderClassName: "text-start",
-      colClassName: "text-start",
     },
     {
-      header: "Default Template",
+      header: "Default",
       accessorKey: "is_default",
       colClassName: "w-2/12",
       cell: ({ _, row }) => (
         <div>
-          {row?.original?.is_default ? <Chip className='capitalize' variant='light' color='green' radius='md' size='sm' border='none' > Yes</Chip> : <Chip className='capitalize' variant='light' color='red' radius='md' size='sm' border='none' > No</Chip>}
+          {
+            row?.original?.is_default ?
+              <Chip className='capitalize' variant='light' color='green' radius='md' size='sm' border='none' 
+              >Default
+              </Chip> :
+              <Button size='xs' type='button' variant="ghost" className="px-1.5 py-1.5 rounded-lg text-gray-500 hover:bg-green-100 hover:text-green-600" onClick={() => handleDefultMutation.mutate(row?.original?.unique_id)}>
+                <Star size={16} />
+              </Button>
+          }
         </div>
       ),
+    },
+    {
+      header: "Created At",
+      accessorKey: "created_at",
+      colClassName: "w-2/12",
+      cell: ({ cell }) => {
+        const value = cell?.getValue();
+        return value ? format(parseISO(value), "dd MMM yyyy, hh:mm a") : "-";
+      },
+    },
+    {
+      header: "Last Modified",
+      accessorKey: "updated_at",
+      colClassName: "w-2/12",
+      cell: ({ cell }) => {
+        const value = cell?.getValue();
+        return value ? format(parseISO(value), "dd MMM yyyy, hh:mm a") : "-";
+      },
     },
     {
       id: "actions",
@@ -116,8 +153,8 @@ export default function InvoiceIndex() {
         data={selectedRow || {}}
         title="Invoice Template Details"
       />
-      <Card className="rounded-lg border">
-        <CardHeader className="p-0 pb-2 border-b md:px-4 px-2 pt-3">
+      <Card className="rounded-lg border space-y-4 ">
+        <CardHeader className="p-0  md:px-4 px-2 pt-3">
           <div className="space-y-4">
             <div className='flex md:flex-row flex-row justify-between items-center ' >
               <div>
@@ -152,7 +189,7 @@ export default function InvoiceIndex() {
                 <div className='pb-2'>
                   <CommonTable
                     table={tableInstance}
-                    tableStyle='2xl:h-[69dvh] h-[60dvh] '
+                    tableStyle='2xl:h-[69dvh] lg:h-[56dvh] h-[60dvh] '
                     tableHeadStyle='bg-transparent hover:bg-transparent bg-indigo-50/30'
                     tableHeadRowStyle='bg-transparent hover:bg-indigo-50/50'
                     tableBodyRowStyle='text-center bg-transparent hover:bg-indigo-50/50'
