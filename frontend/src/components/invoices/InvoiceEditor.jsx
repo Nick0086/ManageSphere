@@ -159,7 +159,7 @@ export default function InvoiceEditor() {
                 <div className="flex items-center justify-between">
                     <CardTitle className='text-primary lg:text-2xl text-lg font-semibold' >  {isNewInvoice ? 'New Invoice' : 'Edit Invoice'}</CardTitle>
                     <div className="flex items-center justify-end md:gap-x-2 gap-x-0.5">
-                        <Button disabled={createInvoiceTemplateMutation?.isPending || updateInvoiceTemplateMutation?.isPending} className='md:px-3 px-1.5 md:py-2 py-1.5 ' size="sm" variant="outline" onClick={() => navigate('/invoice-management')}>
+                        <Button disabled={createInvoiceTemplateMutation?.isPending || updateInvoiceTemplateMutation?.isPending} className='md:px-3 px-1.5 md:py-2 py-1.5 ' size="sm" variant="back" onClick={() => navigate('/invoice-management')}>
                             Back
                         </Button>
                         <Button isLoading={createInvoiceTemplateMutation?.isPending || updateInvoiceTemplateMutation?.isPending} className='md:px-3 px-1.5 md:py-2 py-1.5 ' variant="primary" onClick={handleSaveButtonClick}>

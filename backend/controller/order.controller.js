@@ -102,7 +102,6 @@ export const getOrderById = async (req, res) => {
 }
 };
 
-
 export const createOrder = async (req, res) => {
     try {
         const { restaurantId } = req.params;
@@ -184,4 +183,24 @@ export const createOrder = async (req, res) => {
     } catch (error) {
         handleError("order.controller.js", "createOrder", res, error, "An unexpected error occurred while creating the order.");
     }
+};
+
+export const updateOrderStatus = async (req, res) => {
+  try {
+    const { uniqueId, status } = req.body;
+    const { unique_id: restaurantId } = req.user;
+
+    console.log("Updating order status:", { uniqueId, status, restaurantId });
+
+    const updateSql = `UPDATE orders SET status = ? WHERE unique_id = ? AND restaurant_id = ?`;
+    const result = await executeWithRetry(updateSql, [status, uniqueId, restaurantId]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Order status updated successfully" });
+  } catch (error) {
+    handleError("order.controller.js", "updateOrderStatus", res, error, "Failed to update order status");
+  }
 };

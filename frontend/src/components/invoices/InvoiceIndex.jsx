@@ -132,7 +132,7 @@ export default function InvoiceIndex() {
     },
     initialState: {
       pagination: {
-        pageSize: 100,
+        pageSize: 25,
       },
     },
     getCoreRowModel: getCoreRowModel(),
@@ -186,11 +186,11 @@ export default function InvoiceIndex() {
               </div>
             ) : (
               <>
-                <div className='pb-2'>
+                <div className='pb-2 border-t'>
                   <CommonTable
                     table={tableInstance}
                     tableStyle='2xl:h-[69dvh] lg:h-[56dvh] h-[60dvh] '
-                    tableHeadStyle='bg-transparent hover:bg-transparent bg-indigo-50/30'
+                    tableHeadStyle='bg-white hover:bg-transparent '
                     tableHeadRowStyle='bg-transparent hover:bg-indigo-50/50'
                     tableBodyRowStyle='text-center bg-transparent hover:bg-indigo-50/50'
                     tableHeadCellStyle='text-center'

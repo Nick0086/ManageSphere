@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
-import { orderQueryKeyLookup } from './utils';
-import { getAllOrder } from '@/service/order.service';
-import { useQuery } from '@tanstack/react-query';
+import { orderQueryKeyLookup, orderStatus } from './utils';
+import { getAllOrder, updateOrderStatus } from '@/service/order.service';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCoreRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
-import { toastError } from '@/utils/toast-utils';
+import { toastError, toastSuccess } from '@/utils/toast-utils';
 import CommonTable from '@/common/Table/CommonTable';
 import { DataTablePagination } from '../ui/table-pagination';
 import { Separator } from '../ui/separator';
@@ -14,11 +14,11 @@ import { formatDistanceToNow } from 'date-fns';
 import OrderFilterBar from './orders-filter-bar';
 import { getAllQrCode } from '@/service/table-qrcode.service';
 import SlackLoader from '../ui/CustomLoaders/SlackLoader';
-import { Chip } from '../ui/chip';
 import { Link } from 'react-router';
+import OrderStatusSelector from './components/OrderStatusSelector';
 
 export default function OrdersIndex() {
-
+  const queryClient = useQueryClient();
   const [filter, setFilter] = useState({
     status: null,
     table: null,
@@ -56,25 +56,42 @@ export default function OrdersIndex() {
     })) || [];
   }, [tablesList])
 
+  const resetFilter = () => {
+    setFilter({
+      status: null,
+      table: null,
+      id: '',
+    });
+  };
 
-  const getColor = (color) => {
-    switch (color) {
-      case 'pending':
-        return 'orange';
-      case 'confirmed':
-        return 'sky';
-      case 'preparing':
-        return 'violet';
-      case 'ready':
-        return 'green';
-      case 'completed':
-        return 'teal';
-      case 'cancelled':
-        return 'red';
-      default:
-        return 'slate'; 
-    }
-  }
+  const handleStatusChangeMutation = useMutation({
+    mutationFn: (data) => updateOrderStatus(data),
+    onSuccess: (res, variables) => {
+      queryClient.setQueryData(
+        [orderQueryKeyLookup['ORDERS'], pagination?.pageSize, pagination?.pageIndex, filter],
+        (oldData) => {
+          if (!oldData) return oldData;
+          
+          return {
+            ...oldData,
+            data: oldData.data.map(order => {
+              if (order.unique_id === variables.uniqueId) {
+                return {
+                  ...order,
+                  status: variables.status
+                };
+              }
+              return order;
+            })
+          };
+        }
+      );
+      toastSuccess(res?.message || 'Status updated successfully');
+    },
+    onError: (error) => {
+      toastError(`Error updating status: ${JSON.stringify(error)}`);
+    },
+  });
 
 
   const columns = useMemo(() => [
@@ -101,7 +118,19 @@ export default function OrdersIndex() {
     {
       header: 'Status',
       accessorKey: "status",
-      cell: ({ getValue }) => <Chip className='capitalize' variant='light' color={getColor(getValue())} radius='md' size='sm' border='none' > {getValue()}</Chip>
+      cell: ({ cell }) => {
+        return (
+          <OrderStatusSelector
+            value={cell.getValue()}
+            onChange={(value) => handleStatusChangeMutation.mutate({ uniqueId: cell.row.original.unique_id, status: value })}
+            isLoading={handleStatusChangeMutation.variables?.uniqueId === cell.row.original.unique_id && handleStatusChangeMutation.isPending}
+            options={orderStatus}
+            placeholder='Select Status'
+            searchPlaceholder='Search Status...'
+            emptyMessage='No status found'
+          />
+        )
+      }
     },
     {
       header: 'Amount',
@@ -129,7 +158,7 @@ export default function OrdersIndex() {
         </div>
       )
     }
-  ], []);
+  ], [handleStatusChangeMutation]);
 
   const table = useReactTable({
     data: data?.data || [],
@@ -147,14 +176,14 @@ export default function OrdersIndex() {
 
   return (
     <Card className="rounded-lg border">
-      <CardHeader className="p-0 pb-2 border-b px-4 pt-3">
+      <CardHeader className="p-0 pb-3 border-b px-4 pt-3">
         <div className="space-y-4">
           <div>
             <CardTitle className='text-primary text-2xl font-bold' >Order Management</CardTitle>
             <p className='text-secondary text-sm' >Manage Orders for all your tables</p>
           </div>
           <div>
-            <OrderFilterBar filte={filter} setFilter={setFilter} tablesListOptions={tablesListOptions} />
+            <OrderFilterBar filte={filter} setFilter={setFilter} tablesListOptions={tablesListOptions} resetFilter={resetFilter} />
           </div>
         </div>
       </CardHeader>
@@ -170,8 +199,8 @@ export default function OrdersIndex() {
                 <CommonTable
                   table={table}
                   tableStyle='2xl:h-[69dvh] h-[60dvh] px-4'
-                  tableHeadStyle='bg-transparent hover:bg-transparent'
-                  tableHeadRowStyle='bg-transparent hover:bg-indigo-50/50'
+                  tableHeadStyle='bg-white hover:bg-transparent'
+                  tableHeadRowStyle='bg-white hover:bg-indigo-50/50'
                   tableBodyRowStyle='text-center bg-transparent hover:bg-indigo-50/50'
                   tableHeadCellStyle='text-center'
                 />

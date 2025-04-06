@@ -29,3 +29,12 @@ export const getOrderById = async (orderId) => {
         throw handleApiError(error);
     }
 }
+
+export const updateOrderStatus = async (data) => {
+    try {
+      const response = await authApi.put(`/order/status`, data);
+      return response.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  };

@@ -33,7 +33,8 @@ const buttonVariants = cva(
         primary: "bg-accent-indigo shadow-custom text-white hover:bg-accent-indigo-foreground focus:bg-accent-indigo-foreground",
         addBtn: "border border-accent-indigo  text-accent-indigo hover:bg-accent-indigo hover:text-white bg-transparent font-bold rounded-lg whitespace-nowrap",
         iconBtn: "text-white bg-accent-indigo hover:bg-accent-indigo-foreground rounded-lg whitespace-nowrap",
-        add: "text-indigo-500 gap-2 border bg-white hover:text-white border-indigo-500 hover:bg-indigo-500"
+        add: "text-indigo-500 gap-2 border bg-white hover:text-white border-indigo-500 hover:bg-indigo-500",
+        back:'text-indigo-600 shadow-none border-none bg-indigo-50 hover:bg-indigo-100'
       },
       size: {
         default: "px-4 py-2",

@@ -4,16 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import InfoCard from './components/info-card';
 import { Info, MessageSquareMore, ReceiptText, ScrollText } from 'lucide-react';
-import { getOrderById } from '@/service/order.service';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { getOrderById, updateOrderStatus } from '@/service/order.service';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import SlackLoader from '../ui/CustomLoaders/SlackLoader';
 import { toast } from 'react-toastify';
-import { orderQueryKeyLookup } from './utils';
+import { orderQueryKeyLookup, orderStatus } from './utils';
 import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 import { AppTooltip } from '@/common/AppTooltip';
 import { Chip } from '../ui/chip';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
+import OrderStatusSelector from './components/OrderStatusSelector';
 
 const StatusBadge = memo(({ type }) => {
   return (
@@ -42,26 +43,30 @@ export default function OrderDetailes() {
     }
   }, [error])
 
-  const getColor = (color) => {
-    switch (color) {
-      case 'pending':
-        return 'orange';
-      case 'confirmed':
-        return 'sky';
-      case 'preparing':
-        return 'violet';
-      case 'ready':
-        return 'green';
-      case 'completed':
-        return 'teal';
-      case 'cancelled':
-        return 'red';
-      default:
-        return 'slate';
-    }
-  }
-
-
+  const handleStatusChangeMutation = useMutation({
+    mutationFn: (data) => updateOrderStatus(data),
+    onSuccess: (res, variables) => {
+      queryClient.setQueryData(
+        [orderQueryKeyLookup['ORDER_DETAILS'], orderId],
+        (oldData) => {
+          console.log(oldData); 
+          if (!oldData) return oldData;
+          
+          return {
+            ...oldData,
+            order: {
+              ...oldData.order,
+              status: variables.status
+            }
+          };
+        }
+      );
+      toastSuccess(res?.message || 'Status updated successfully');
+    },
+    onError: (error) => {
+      toastError(`Error updating status: ${JSON.stringify(error)}`);
+    },
+  });
 
   return (
     <Card className="rounded-lg border">
@@ -70,11 +75,20 @@ export default function OrderDetailes() {
           <div className='flex items-center gap-2' >
             <CardTitle className='text-primary text-2xl font-bold' >#{orderId}</CardTitle>
             {
-              data?.order?.status ? (<Chip className='capitalize' variant='light' color={getColor(data?.order?.status)} radius='md' size='sm' border='none' > {data?.order?.status}</Chip>) : ""
+              data?.order?.status ? (
+                <OrderStatusSelector
+                  value={data?.order?.status}
+                  onChange={(value) => handleStatusChangeMutation.mutate({ uniqueId: data?.order?.unique_id, status: value })}
+                  isLoading={handleStatusChangeMutation.isPending}
+                  options={orderStatus}
+                  placeholder='Select Status'
+                  searchPlaceholder='Search Status...'
+                  emptyMessage='No status found'
+                />) : ""
             }
           </div>
 
-          <Button variant="default" size='sm' border='none' className='text-indigo-600 shadow-none border-none bg-indigo-50 hover:bg-indigo-100' onClick={() => navigate('/order-management')}>
+          <Button variant="back" size='sm' border='none' onClick={() => navigate('/order-management')}>
             Back
           </Button>
         </div>
@@ -104,7 +118,11 @@ export default function OrderDetailes() {
               :
               <div className='space-y-6' >
                 <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 px-4' >
-                  <InfoCard icon={<Info size={18} />} title='Order Information' description=''>
+                  <InfoCard
+                    icon={<Info size={18} />}
+                    title='Order Information'
+                    description=''
+                  >
                     <div>
                       <span>Order Form : </span>
                       <span>{data?.order?.table_name}</span>
@@ -114,7 +132,11 @@ export default function OrderDetailes() {
                       <span>{formatDistanceToNow(new Date(data?.order?.created_at), { addSuffix: true })}</span>
                     </div>
                   </InfoCard>
-                  <InfoCard icon={<ScrollText size={18} />} title='Order Summary' description=''>
+                  <InfoCard
+                    icon={<ScrollText size={18} />}
+                    title='Order Summary'
+                    description=''
+                  >
                     <div>
                       <span>Sub Amount : </span>
                       <span>${data?.order?.total_amount}</span>
@@ -124,7 +146,11 @@ export default function OrderDetailes() {
                       <span>${data?.order?.total_amount}</span>
                     </div>
                   </InfoCard>
-                  <InfoCard icon={<ReceiptText size={18} />} title='Actions' description=''>
+                  <InfoCard
+                    icon={<ReceiptText size={18} />}
+                    title='Actions'
+                    description=''
+                  >
                     No Special Request for this order
                   </InfoCard>
                 </div>
@@ -157,11 +183,11 @@ export default function OrderDetailes() {
                   </div>
                 </div>
                 <div className='px-4' >
-                <InfoCard icon={<MessageSquareMore size={18} />} title='Customer Notes' description=''>
+                  <InfoCard icon={<MessageSquareMore size={18} />} title='Customer Notes' description=''>
                     {data?.order?.customer_notes || 'No Special Request for this order'}
                   </InfoCard>
                 </div>
-               
+
               </div>
 
         }

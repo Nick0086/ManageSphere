@@ -3,13 +3,14 @@ import { Input } from '../ui/input'
 import { FacetedFilter } from '../ui/FacetedFilter'
 import { orderStatus } from './utils'
 import { Button } from '../ui/button'
-import { Search } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 
 export default function OrderFilterBar({
     filte,
     setFilter,
-    tablesListOptions
+    tablesListOptions,
+    resetFilter
 }) {
     // Local state to track input value without triggering API calls
     const [idInputValue, setIdInputValue] = useState(filte?.id || '')
@@ -44,9 +45,9 @@ export default function OrderFilterBar({
                                 onKeyDown={handleKeyDown}
                                 className="h-8 pr-8"
                             />
-                            <Button 
-                                variant="ghost" 
-                                size="sm" 
+                            <Button
+                                variant="ghost"
+                                size="sm"
                                 className="absolute right-0 h-8 px-2"
                                 onClick={handleSearch}
                             >
@@ -60,19 +61,26 @@ export default function OrderFilterBar({
                 </Tooltip>
             </TooltipProvider>
 
-            <FacetedFilter 
-                title="Status" 
-                options={orderStatus} 
-                onFilterChange={(value) => setFilter((prev) => ({ ...prev, status: value }))} 
-                value={filte?.status} 
+            <FacetedFilter
+                title="Status"
+                options={orderStatus}
+                onFilterChange={(value) => setFilter((prev) => ({ ...prev, status: value }))}
+                value={filte?.status}
             />
 
-            <FacetedFilter 
-                title="Table" 
-                options={tablesListOptions} 
-                onFilterChange={(value) => setFilter((prev) => ({ ...prev, table: value }))} 
-                value={filte?.table} 
+            <FacetedFilter
+                title="Table"
+                options={tablesListOptions}
+                onFilterChange={(value) => setFilter((prev) => ({ ...prev, table: value }))}
+                value={filte?.table}
             />
+
+            {(!!idInputValue || filte?.status?.length || filte?.table) && (
+                <Button variant="ghost" onClick={resetFilter} className="text-red-500 h-8 px-1 lg:px-2 hover:bg-red-100 hover:text-red-700">
+                    Reset
+                    <X className="ml-2 h-4 w-4" />
+                </Button>
+            )}
         </div>
-    )
+    );
 }
