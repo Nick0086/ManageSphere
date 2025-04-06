@@ -1,4 +1,4 @@
-import React, { memo, useEffect } from 'react'
+import React, { memo, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
@@ -15,6 +15,8 @@ import { Chip } from '../ui/chip';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import OrderStatusSelector from './components/OrderStatusSelector';
+import { captureInvoiceSnapshot, checkSnapshotExists } from '@/service/invoices.service';
+import { toastError } from '@/utils/toast-utils';
 
 const StatusBadge = memo(({ type }) => {
   return (
@@ -31,17 +33,45 @@ export default function OrderDetailes() {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const userInfo = JSON.parse(localStorage.getItem('userData') || "{}")
+
+  const [isSnapshotError, setIsSnapshotError] = useState(false);
+
+  const { data: snapshotData, isLoading: snapshotLoading, error: snapshotError } = useQuery({
+    queryKey: [orderQueryKeyLookup['SNAPSHOT'], orderId],
+    queryFn: () => checkSnapshotExists(orderId?.replace('-', '_'))
+  })
 
   const { data, isLoading, error } = useQuery({
     queryKey: [orderQueryKeyLookup['ORDER_DETAILS'], orderId],
-    queryFn: () => getOrderById(orderId?.replace('-', '_'))
+    queryFn: () => getOrderById(orderId?.replace('-', '_')),
+    enabled: !!snapshotData
   })
+
+  const orderCreateMutation = useMutation({
+    mutationFn:  captureInvoiceSnapshot,
+    onSuccess: () => {
+      setIsSnapshotError(false)
+      queryClient.invalidateQueries([orderQueryKeyLookup['SNAPSHOT'], orderId]);
+    },
+    onError: (error) => {
+      toastError(`Error During Fetching Order: ${error?.err?.message}`);
+    }
+  });
 
   useEffect(() => {
     if (error) {
       toast.error(error.message);
     }
-  }, [error])
+    if (snapshotError) {
+      if (snapshotError.err.status === 404) {
+        orderCreateMutation.mutate({ orderId: orderId?.replace('-', '_'), restaurantId: userInfo?.unique_id });
+      } else {
+        setIsSnapshotError(true)
+        toast.error(snapshotError.err.message);
+      }
+    }
+  }, [error, snapshotError])
 
   const handleStatusChangeMutation = useMutation({
     mutationFn: (data) => updateOrderStatus(data),
@@ -49,9 +79,9 @@ export default function OrderDetailes() {
       queryClient.setQueryData(
         [orderQueryKeyLookup['ORDER_DETAILS'], orderId],
         (oldData) => {
-          console.log(oldData); 
+          console.log(oldData);
           if (!oldData) return oldData;
-          
+
           return {
             ...oldData,
             order: {
@@ -95,11 +125,11 @@ export default function OrderDetailes() {
       </CardHeader>
       <CardContent className="p-0 py-4">
         {
-          isLoading ?
+          (isLoading || snapshotLoading || orderCreateMutation.isPending) ?
             <div className='flex items-center justify-center min-h-[60dvh] ' >
               <SlackLoader />
             </div>
-            : error ?
+            : (error || isSnapshotError || snapshotError) ?
               <div className='px-4' >
                 <InfoCard icon={<Info size={18} />} title='Error Loading Order' description=''>
                   <div className='space-y-2' >
@@ -157,7 +187,7 @@ export default function OrderDetailes() {
                 <div className='px-4 space-y-4' >
                   <h4 className='text-lg font-bold' >Ordered Items</h4>
                   <div>
-                    <Table parentClassName={'2xl:h-[69dvh] h-[60dvh]'} >
+                    <Table parentClassName={'2xl:max-h-[69dvh] max-h-[60dvh]'} >
                       <TableBody className='' >
                         {data?.order?.items?.length > 0 ? (
                           data?.order?.items?.map((row) => (

@@ -2,6 +2,7 @@ export const orderQueryKeyLookup = {
     'ORDERS': 'tables-orders',
     'QRCODES': 'tables-list-filter',
     'ORDER_DETAILS': 'order-details',
+    'SNAPSHOT': 'invoice-snapshot',
 }
 
 export const orderStatus = [

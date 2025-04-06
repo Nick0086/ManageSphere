@@ -74,7 +74,6 @@ const waitForToken = () => {
 
 export const handleApiError = (error) => {
     const defaultErrorMessage = "Hmmm... something seems to have gone wrong. Please try again later.";
-    console.error("API Error", error);
     return {
         success: false,
         err: {

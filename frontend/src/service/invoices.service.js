@@ -63,3 +63,20 @@ export const setDefaultInvoiceTemplate = async (templateId) => {
     }
 }
 
+export const captureInvoiceSnapshot = async ({orderId, restaurantId}) => {
+    try {
+        const response = await api.post(`/invoice/capture-snapshot/${orderId}/${restaurantId}`);
+        return response.data
+    } catch (error) {
+        throw handleApiError(error);
+    }
+}
+
+export const checkSnapshotExists = async (orderId) => {
+    try {
+        const response = await api.get(`/invoice/check-snapshot/${orderId}`);
+        return response.data
+    } catch (error) {
+        throw handleApiError(error);
+    }
+}

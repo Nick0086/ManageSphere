@@ -13,11 +13,12 @@ CREATE TABLE invoice_templates (
     header_content TEXT,
     footer_content TEXT,
     logo_url VARCHAR(255),
+    snapshot_version_id CHAR(36) NOT NULL UNIQUE,
     is_default BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(unique_id) ON DELETE CASCADE
-); 
+);
 */
 
 /* -- Table: tax_configurations
@@ -67,13 +68,8 @@ CREATE TABLE invoices (
     unique_id CHAR(36) NOT NULL UNIQUE,
     order_id CHAR(36) NOT NULL,  -- Reference to orders.unique_id
     invoice_template_id CHAR(36) NOT NULL,  -- Reference to invoice_templates.unique_id
-    invoice_number VARCHAR(50) NOT NULL,
+    snapshot_version_id CHAR(36) NOT NULL,  -- Reference to template_tax_snapshots.unique_id
     invoice_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    subtotal DECIMAL(10,2) NOT NULL,  -- Matches orders.total_amount
-    tax_amount DECIMAL(10,2) DEFAULT 0,  -- Sum from invoice_taxes
-    additional_charges DECIMAL(10,2) DEFAULT 0,  -- Sum from invoice_additional_charges
-    discount_amount DECIMAL(10,2) DEFAULT 0,
-    total_amount DECIMAL(10,2) NOT NULL,  -- subtotal + tax_amount + additional_charges - discount_amount
     header_content TEXT,  -- Snapshot from invoice_templates
     footer_content TEXT,  -- Snapshot from invoice_templates
     logo_url VARCHAR(255),  -- Snapshot from invoice_templates
@@ -83,31 +79,45 @@ CREATE TABLE invoices (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (order_id) REFERENCES orders(unique_id) ON DELETE CASCADE,
     FOREIGN KEY (invoice_template_id) REFERENCES invoice_templates(unique_id) ON DELETE CASCADE
-);*/
+);
 
-/* -- Table: invoice_taxes
--- Purpose: Stores snapshot of taxes applied to each invoice
-CREATE TABLE invoice_taxes (
+/* -- Table: template_tax_snapshots
+-- Purpose: Stores snapshot of taxes applied to each template
+CREATE TABLE template_tax_snapshots (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    unique_id CHAR(36) NOT NULL UNIQUE,
+    snapshot_version_id CHAR(36) NOT NULL,  -- Groups taxes for a specific template version
+    user_id CHAR(36) NOT NULL,  -- Reference to users.unique_id
     invoice_id CHAR(36) NOT NULL,  -- Reference to invoices.unique_id
-    tax_name VARCHAR(100) NOT NULL,
-    tax_rate DECIMAL(5,2) NOT NULL,  -- Snapshot of rate at invoice time
-    tax_type ENUM('percentage', 'fixed') NOT NULL,
-    tax_amount DECIMAL(10,2) NOT NULL,  -- Calculated tax amount
-    FOREIGN KEY (invoice_id) REFERENCES invoices(unique_id) ON DELETE CASCADE
-);*/
+    name VARCHAR(100) NOT NULL,
+    rate DECIMAL(5,2) NOT NULL,
+    tax_type ENUM('percentage', 'fixed') NOT NULL DEFAULT 'percentage',
+    applies_to ENUM('all', 'food', 'beverage', 'specific_items') NOT NULL DEFAULT 'all',
+    is_additional BOOLEAN DEFAULT FALSE,
+    is_compound BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (invoice_id) REFERENCES invoice_templates(unique_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(unique_id) ON DELETE CASCADE
+);
+*/
 
-/* -- Table: invoice_additional_charges
--- Purpose: Stores snapshot of additional charges applied to each invoice
-CREATE TABLE invoice_additional_charges (
+/* -- Table: template_charge_snapshots
+-- Purpose: Stores snapshot of charges applied to each template
+CREATE TABLE template_charge_snapshots (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    unique_id CHAR(36) NOT NULL UNIQUE,
+    snapshot_version_id CHAR(36) NOT NULL,  -- Groups charges for a specific template version
     invoice_id CHAR(36) NOT NULL,  -- Reference to invoices.unique_id
-    charge_name VARCHAR(100) NOT NULL,
-    charge_type ENUM('fixed', 'percentage') NOT NULL,
-    charge_rate DECIMAL(5,2),  -- Percentage rate if charge_type is 'percentage', else NULL
-    charge_amount DECIMAL(10,2) NOT NULL,  -- Calculated charge amount
-    FOREIGN KEY (invoice_id) REFERENCES invoices(unique_id) ON DELETE CASCADE
-    );*/
+    user_id CHAR(36) NOT NULL,  -- Reference to users.unique_id
+    name VARCHAR(100) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    charge_type ENUM('fixed', 'percentage') NOT NULL DEFAULT 'fixed',
+    applies_to ENUM('all', 'delivery', 'dine_in', 'takeaway') NOT NULL DEFAULT 'all',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (invoice_id) REFERENCES invoice_templates(unique_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(unique_id) ON DELETE CASCADE
+);
+*/
 
 // Configuration constants
 const MAX_BATCH_SIZE = 50;
@@ -143,11 +153,11 @@ async function batchUpdate(tableName, keyColumns, updateColumns, rows, errorMess
     try {
         const updates = rows.map(row =>
             executeWithRetry(sql, row).then(result => {
-                    if (result.affectedRows === 0) {
-                        throw new Error(`${errorMessage}: No rows affected`);
-                    }
-                    return result;
-                })
+                if (result.affectedRows === 0) {
+                    throw new Error(`${errorMessage}: No rows affected`);
+                }
+                return result;
+            })
         );
         await Promise.all(updates);
     } catch (error) {
@@ -212,7 +222,7 @@ async function processAssociatedItems({
         const itemsToDelete = [...existingSet].filter(id => !incomingIds.has(id));
         // Bulk delete removed items
         if (itemsToDelete.length > 0) {
-            await executeWithRetry(`DELETE FROM ${tableName} WHERE unique_id IN (?)`,[itemsToDelete]);
+            await executeWithRetry(`DELETE FROM ${tableName} WHERE unique_id IN (?)`, [itemsToDelete]);
         }
 
         // Prepare bulk updates and inserts
@@ -280,18 +290,21 @@ export const createInvoiceTemplate = async (req, res) => {
 
         // Generate IDs
         const templateId = createUniqueId('IT');
+        const snapshotId = uuidv4();
         const taxIds = Array(tax_configurations.length).fill().map(() => uuidv4());
+        const taxIdsSnapshot = Array(tax_configurations.length).fill().map(() => uuidv4());
         const chargeIds = Array(additional_charges.length).fill().map(() => uuidv4());
+        const chargeIdsSnapshot = Array(additional_charges.length).fill().map(() => uuidv4());
 
         // Execute transaction
 
         try {
             // Create template
-            await query('INSERT INTO invoice_templates (unique_id, user_id, name, header_content, footer_content, logo_url) VALUES (?, ?, ?, ?, ?, ?, ?)',[templateId, userId, invoiceTemplateName, headerText, footerText, logoUrl]);
+            await query('INSERT INTO invoice_templates (unique_id, user_id, name, header_content, footer_content, logo_url,snapshot_version_id) VALUES (?, ?, ?, ?, ?, ?, ?)', [templateId, userId, invoiceTemplateName, headerText, footerText, logoUrl, snapshotId]);
 
-            if(isDefault){
-                await executeWithRetry('UPDATE invoice_templates SET is_default = 0 WHERE user_id = ?',[userId]);
-                await executeWithRetry('UPDATE invoice_templates SET is_default = 1 WHERE unique_id = ?',[templateId]);
+            if (isDefault) {
+                await executeWithRetry('UPDATE invoice_templates SET is_default = 0 WHERE user_id = ?', [userId]);
+                await executeWithRetry('UPDATE invoice_templates SET is_default = 1 WHERE unique_id = ?', [templateId]);
             }
 
             // Process tax configurations and additional charges
@@ -313,7 +326,26 @@ export const createInvoiceTemplate = async (req, res) => {
                     ]),
                     MAX_BATCH_SIZE
                 );
+
+                await batchInsert(
+                    'template_tax_snapshots',
+                    ['unique_id', 'snapshot_version_id', 'invoice_id', 'user_id', 'name', 'rate', 'tax_type', 'applies_to', 'is_additional', 'is_compound'],
+                    tax_configurations.map((tax, i) => [
+                        taxIdsSnapshot[i],
+                        snapshotId,
+                        templateId,
+                        userId,
+                        tax.name,
+                        tax.rate,
+                        tax.tax_type || 'percentage',
+                        tax.applies_to || 'all',
+                        tax.is_additional || false,
+                        tax.is_compound || false
+                    ]),
+                    MAX_BATCH_SIZE
+                );
             }
+
 
             if (additional_charges.length) {
                 await batchInsert(
@@ -328,6 +360,22 @@ export const createInvoiceTemplate = async (req, res) => {
                         charge.type || 'fixed',
                         charge.applies_to || 'all',
                         charge.is_active || true
+                    ]),
+                    MAX_BATCH_SIZE
+                );
+
+                await batchInsert(
+                    'template_charge_snapshots',
+                    ['unique_id', 'snapshot_version_id', 'invoice_id', 'user_id', 'name', 'amount', 'charge_type', 'applies_to'],
+                    additional_charges.map((charge, i) => [
+                        chargeIdsSnapshot[i],
+                        snapshotId,
+                        templateId,
+                        userId,
+                        charge.name,
+                        charge.amount,
+                        charge.type || 'fixed',
+                        charge.applies_to || 'all'
                     ]),
                     MAX_BATCH_SIZE
                 );
@@ -404,15 +452,16 @@ export const updateInvoiceTemplate = async (req, res) => {
         // Generate IDs for new items
         const newTaxIds = Array(tax_configurations.filter(t => !t.unique_id).length).fill().map(() => uuidv4());
         const newChargeIds = Array(additional_charges.filter(c => !c.unique_id).length).fill().map(() => uuidv4());
-
-
+        const snapshotId = uuidv4();
+        const taxIds = Array(tax_configurations.length).fill().map(() => uuidv4());
+        const chargeIds = Array(additional_charges.length).fill().map(() => uuidv4());
         try {
             // Update template
-            await query('UPDATE invoice_templates SET name = ?, header_content = ?, footer_content = ?, logo_url = ? WHERE unique_id = ?', [invoiceTemplateName, headerText, footerText, logoUrl, templateId]);
+            await query('UPDATE invoice_templates SET name = ?, header_content = ?, footer_content = ?, logo_url = ?, snapshot_version_id = ? WHERE unique_id = ?', [invoiceTemplateName, headerText, footerText, logoUrl, snapshotId, templateId]);
 
-            if(isDefault){
-                await executeWithRetry('UPDATE invoice_templates SET is_default = 0 WHERE user_id = ?',[userId]);
-                await executeWithRetry('UPDATE invoice_templates SET is_default = 1 WHERE unique_id = ?',[templateId]);
+            if (isDefault) {
+                await executeWithRetry('UPDATE invoice_templates SET is_default = 0 WHERE user_id = ?', [userId]);
+                await executeWithRetry('UPDATE invoice_templates SET is_default = 1 WHERE unique_id = ?', [templateId]);
             }
 
             // Process associated items
@@ -443,6 +492,20 @@ export const updateInvoiceTemplate = async (req, res) => {
                     itemIdentifier: 'additional charge'
                 })
             ]);
+
+            if (tax_configurations.length) {
+                await batchInsert(
+                    'template_tax_snapshots', ['unique_id', 'snapshot_version_id', 'invoice_id', 'user_id', 'name', 'rate', 'tax_type', 'applies_to', 'is_additional', 'is_compound'],
+                    tax_configurations.map((tax, i) => [taxIds[i], snapshotId, templateId, userId, tax.name, tax.rate, tax.tax_type || 'percentage', tax.applies_to || 'all', tax.is_additional || false, tax.is_compound || false]), MAX_BATCH_SIZE
+                );
+            }
+
+            if (additional_charges.length) {
+                await batchInsert(
+                    'template_charge_snapshots', ['unique_id', 'snapshot_version_id', 'invoice_id', 'user_id', 'name', 'amount', 'charge_type', 'applies_to'],
+                    additional_charges.map((charge, i) => [chargeIds[i], snapshotId, templateId, userId, charge.name, charge.amount, charge.type || 'fixed', charge.applies_to || 'all']), MAX_BATCH_SIZE
+                );
+            }
 
             return res.status(200).json({
                 status: "success",
@@ -550,7 +613,7 @@ export const getInvoiceTemplateByIdWithItems = async (req, res) => {
         const { unique_id: userId } = req.user;
 
         // Step 1: Get the basic invoice template first
-        const templateQuery = `SELECT * FROM invoice_templates WHERE unique_id = ? AND user_id = ?LIMIT 1`;
+        const templateQuery = `SELECT * FROM invoice_templates WHERE unique_id = ? AND user_id = ? LIMIT 1`;
         const [templateResults] = await query(templateQuery, [templateId, userId]);
 
         if (!templateResults || templateResults.length === 0) {
@@ -606,3 +669,64 @@ export const setDefaultInvoiceTemplate = async (req, res) => {
     }
 }
 
+// capture invoice snapshot
+export const captureInvoiceSnapshot = async (req, res) => {
+    try {
+        const { orderId, restaurantId } = req.params;
+
+        // Get template
+        const templateQuery = `SELECT unique_id, header_content, footer_content, snapshot_version_id FROM invoice_templates WHERE user_id = ? AND is_default = 1`;
+        const [templateResults] = await executeWithRetry(templateQuery, [restaurantId]);
+
+        if (!templateResults) {
+            return res.status(404).json({ success: false, message: "Default invoice template not found" });
+        }
+
+        // Get order
+        const [order] = await executeWithRetry("SELECT o.total_amount FROM orders o WHERE o.unique_id = ? AND o.restaurant_id = ?", [orderId, restaurantId]);
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+
+        const snapshotId = `${uuidv4()}`;
+
+        const snapshotResult = await executeWithRetry(
+            'INSERT INTO invoices (unique_id, order_id, invoice_template_id, snapshot_version_id, header_content, footer_content) VALUES (?, ?, ?, ?, ?, ?)',
+            [snapshotId, orderId, templateResults.unique_id, templateResults.snapshot_version_id, templateResults.header_content, templateResults.footer_content]
+        );
+
+        if (!snapshotResult || snapshotResult.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: "Failed to capture invoice snapshot" });
+        }
+
+        res.status(201).json({ success: true, message: "Invoice snapshot captured successfully" });
+    } catch (error) {
+        handleError('invoices.controller.js', 'captureInvoiceSnapshot', res, error, 'Failed to capture invoice snapshot');
+    }
+};
+
+export const checkSnapshotExists = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { unique_id: restaurantId } = req.user;
+
+        const templateQuery = `SELECT unique_id FROM invoice_templates WHERE user_id = ? AND is_default = 1`;
+        const [templateResults] = await executeWithRetry(templateQuery, [restaurantId]);
+
+        if (!templateResults) {
+            return res.status(404).json({ success: false, message: "Default invoice template not found" });
+        }
+
+        const snapshotQuery = `SELECT * FROM invoices WHERE order_id = ? AND invoice_template_id = ?`;
+        const [snapshot] = await executeWithRetry(snapshotQuery, [orderId, templateResults.unique_id]);
+
+        if (snapshot) {
+            return res.status(200).json({ success: true, message: "Invoice snapshot exists" });
+        } else {
+            return res.status(404).json({ success: false, message: "Invoice snapshot not found" });
+        }
+    } catch (error) {
+        handleError('invoices.controller.js', 'checkSnapshotExists', res, error, 'Failed to check invoice snapshot');
+    }
+};

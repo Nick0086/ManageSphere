@@ -95,11 +95,14 @@ export const getOrderById = async (req, res) => {
 
         const orderItems = await query("SELECT oi.*, mi.name as menu_item_name , mi.veg_status as veg_status FROM order_items oi LEFT JOIN menu_items mi ON mi.unique_id = oi.menu_item_id WHERE order_id = ?", [orderId]);
 
-        res.status(201).json({ success: true, message: "Order fetched successfully.", order : { ...order[0], items: orderItems } });
+        // const templateQuery = `SELECT * FROM invoice_templates WHERE user_id = ? AND is_default = 1`;
+        // const [templateResults] = await query(templateQuery, [templateId, userId]);
 
-} catch (error) {
-    handleError('order.controller.js', 'getOrderById', res, error, 'Failed to fetch order');
-}
+        res.status(201).json({ success: true, message: "Order fetched successfully.", order: { ...order[0], items: orderItems } });
+
+    } catch (error) {
+        handleError('order.controller.js', 'getOrderById', res, error, 'Failed to fetch order');
+    }
 };
 
 export const createOrder = async (req, res) => {
@@ -186,21 +189,19 @@ export const createOrder = async (req, res) => {
 };
 
 export const updateOrderStatus = async (req, res) => {
-  try {
-    const { uniqueId, status } = req.body;
-    const { unique_id: restaurantId } = req.user;
+    try {
+        const { uniqueId, status } = req.body;
+        const { unique_id: restaurantId } = req.user;
 
-    console.log("Updating order status:", { uniqueId, status, restaurantId });
+        const updateSql = `UPDATE orders SET status = ? WHERE unique_id = ? AND restaurant_id = ?`;
+        const result = await executeWithRetry(updateSql, [status, uniqueId, restaurantId]);
 
-    const updateSql = `UPDATE orders SET status = ? WHERE unique_id = ? AND restaurant_id = ?`;
-    const result = await executeWithRetry(updateSql, [status, uniqueId, restaurantId]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ success: false, message: "Order not found" });
+        res.status(200).json({ success: true, message: "Order status updated successfully" });
+    } catch (error) {
+        handleError("order.controller.js", "updateOrderStatus", res, error, "Failed to update order status");
     }
-
-    res.status(200).json({ success: true, message: "Order status updated successfully" });
-  } catch (error) {
-    handleError("order.controller.js", "updateOrderStatus", res, error, "Failed to update order status");
-  }
 };

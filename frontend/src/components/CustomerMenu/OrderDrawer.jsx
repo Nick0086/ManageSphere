@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { useMutation } from '@tanstack/react-query';
 import { toastError, toastSuccess } from '@/utils/toast-utils';
 import { createOrder } from '@/service/order.service';
+import { captureInvoiceSnapshot } from '@/service/invoices.service';
 
 const StatusBadge = memo(({ type }) => {
     return (
@@ -66,8 +67,8 @@ export const OrderDrawer = () => {
     const orderCreateMutation = useMutation({
         mutationFn: createOrder,
         onSuccess: (res, variables) => {
+            captureInvoiceSnapshot({orderId : res?.orderId, restaurantId : restaurantId})
             toastSuccess(res?.message || 'Order successfully');
-            console.log(res)
             addItem({ ...variables, orderUniqueId: res?.orderId })
             clearOrder()
         },
